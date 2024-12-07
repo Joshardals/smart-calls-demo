@@ -2,19 +2,29 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { ethers } from "ethers";
+import { FaSpinner } from "react-icons/fa"; // Import spinner icon
 
 export function Wallet() {
   const [walletAddress, setWalletAddress] = useState<string>(""); // Wallet address
   const [transactionStatus, setTransactionStatus] = useState<string>(""); // Status message
+  const [isLoading, setIsLoading] = useState<boolean>(false); // Loading state
+  const [errorMessage, setErrorMessage] = useState<string>(""); // Error message
 
   // Fixed values for transaction
   const FIXED_AMOUNT = "0.01"; // Fixed amount in ETH/BNB
   const RECIPIENT_ADDRESS = "0xYourRecipientAddressHere"; // Replace with your recipient address
 
   const handleSmartCall = async (): Promise<void> => {
+    setIsLoading(true); // Start loading spinner
+    setTransactionStatus(""); // Clear status message
+    setErrorMessage(""); // Clear error message
+
     try {
       if (!window.ethereum) {
-        alert("MetaMask is not installed!");
+        setErrorMessage(
+          "MetaMask is not installed. Please install it to proceed."
+        );
+        setIsLoading(false);
         return;
       }
 
@@ -39,7 +49,10 @@ export function Wallet() {
 
       const balanceInWei = await signer.getBalance();
       if (transactionValue.add(estimatedGasCost).gt(balanceInWei)) {
-        alert("Insufficient funds to cover transaction and gas fees.");
+        setErrorMessage(
+          "Insufficient funds to cover the transaction and gas fees."
+        );
+        setIsLoading(false);
         return;
       }
 
@@ -57,13 +70,17 @@ export function Wallet() {
       setTransactionStatus(`Transaction successful! Hash: ${txResponse.hash}`);
     } catch (error) {
       console.error("Transaction failed:", error);
-      setTransactionStatus("Transaction failed. Check console for details.");
+      setErrorMessage(
+        "Transaction failed. Please check the console for details."
+      );
+    } finally {
+      setIsLoading(false); // Stop loading spinner
     }
   };
 
   return (
     <div className="flex justify-center">
-      <div className="flex flex-col p-6 rounded-xl items-center space-y-4 bg-[#090C17] w-full  ring-1 ring-white/20 ">
+      <div className="flex flex-col p-6 rounded-xl items-center space-y-4 bg-[#090C17] w-full ring-1 ring-white/20">
         <Image
           src="/metamask.webp"
           width={100}
@@ -82,14 +99,23 @@ export function Wallet() {
 
         <button
           onClick={handleSmartCall}
-          className="bg-[#08a0dd] text-white px-4 py-2 rounded-lg hover:bg-[#08a0dd]/70"
+          className="bg-[#08a0dd] text-white px-4 py-2 rounded-lg hover:bg-[#08a0dd]/70 flex items-center justify-center"
+          disabled={isLoading} // Disable button during loading
         >
-          Smart Call
+          {isLoading ? (
+            <>
+              <FaSpinner className="animate-spin mr-2" /> Processing...
+            </>
+          ) : (
+            "Smart Call"
+          )}
         </button>
 
         {transactionStatus && (
-          <p className="text-sm text-gray-600">{transactionStatus}</p>
+          <p className="text-sm text-green-500">{transactionStatus}</p>
         )}
+
+        {errorMessage && <p className="text-sm text-red-500">{errorMessage}</p>}
       </div>
     </div>
   );
