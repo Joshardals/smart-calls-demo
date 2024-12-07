@@ -115,7 +115,9 @@ export function Wallet() {
           <p className="text-sm text-green-500">{transactionStatus}</p>
         )}
 
-        {errorMessage && <p className="text-sm text-red-500">{errorMessage}</p>}
+        {errorMessage && (
+          <p className="text-sm text-red-500 text-center">{errorMessage}</p>
+        )}
       </div>
     </div>
   );
