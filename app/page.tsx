@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import * as SyntaxHighlighter from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+// import * as SyntaxHighlighter from "react-syntax-highlighter";
+// import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Wallet } from "./_components/Wallet";
 
 export default function Home() {
@@ -158,8 +158,7 @@ export default function Home() {
               Request”, you should see a response that looks like this:
             </p>
 
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
+            {/* <SyntaxHighlighter
               language="javascript"
               style={vscDarkPlus}
               customStyle={{
@@ -167,7 +166,7 @@ export default function Home() {
               }}
             >
               {`{"jsonrpc": "2.0", "id": 0, "result": "0x2B5E3AF16B1880000"}`}
-            </SyntaxHighlighter>
+            </SyntaxHighlighter> */}
 
             <p>
               After you input your Metamask account address and click “Send
@@ -191,8 +190,7 @@ export default function Home() {
             Step 6: Initialize our project
           </h3>
           <div className="space-y-8">
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
+            {/* <SyntaxHighlighter
               language="javascript"
               style={vscDarkPlus}
               customStyle={{
@@ -200,7 +198,7 @@ export default function Home() {
               }}
             >
               {`mkdir hello-world\ncd hello-world`}
-            </SyntaxHighlighter>
+            </SyntaxHighlighter> */}
             <p>
               First, we&apos;ll need to create a folder for our project.
               Navigate to your{" "}
@@ -219,8 +217,7 @@ export default function Home() {
               so download that too!).
             </p>
 
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
+            {/* <SyntaxHighlighter
               language="javascript"
               style={vscDarkPlus}
               customStyle={{
@@ -228,14 +225,14 @@ export default function Home() {
               }}
             >
               {`npm init # (or npm init --yes)`}
-            </SyntaxHighlighter>
+            </SyntaxHighlighter> */}
 
             <p>
               It doesn&apos;t really matter how you answer the installation
               questions, here is how we did it for reference:
             </p>
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
+
+            {/* <SyntaxHighlighter
               language="bash"
               style={vscDarkPlus}
               customStyle={{
@@ -265,7 +262,7 @@ About to write to /Users/.../.../.../hello-world/package.json:
    "author": "",
    "license": "ISC"
 }`}
-            </SyntaxHighlighter>
+            </SyntaxHighlighter> */}
 
             <p>Approve the package.json and we&apos;re good to go!</p>
           </div>
@@ -292,8 +289,8 @@ About to write to /Users/.../.../.../hello-world/package.json:
               Inside our <code className="bg-[#2D2D2D]">hello-world</code>{" "}
               project run:
             </p>
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
+
+            {/* <SyntaxHighlighter
               language="javascript"
               style={vscDarkPlus}
               customStyle={{
@@ -301,7 +298,7 @@ About to write to /Users/.../.../.../hello-world/package.json:
               }}
             >
               {`npm install --save-dev hardhat`}
-            </SyntaxHighlighter>
+            </SyntaxHighlighter> */}
 
             <p>
               Check out this page for more details on{" "}
@@ -324,8 +321,8 @@ About to write to /Users/.../.../.../hello-world/package.json:
               Inside our <code className="bg-[#2D2D2D]">hello-world</code>{" "}
               project run:
             </p>
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
+
+            {/* <SyntaxHighlighter
               language="javascript"
               style={vscDarkPlus}
               customStyle={{
@@ -333,14 +330,14 @@ About to write to /Users/.../.../.../hello-world/package.json:
               }}
             >
               {`npx hardhat`}
-            </SyntaxHighlighter>
+            </SyntaxHighlighter> */}
 
             <p>
               You should then see a welcome message and option to select what
               you want to do. Select “create an empty hardhat.config.js”:
             </p>
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
+
+            {/* <SyntaxHighlighter
               language="text"
               style={vscDarkPlus}
               customStyle={{
@@ -362,7 +359,7 @@ What do you want to do? …
 Create a sample project
 ❯ Create an empty hardhat.config.js
 Quit`}
-            </SyntaxHighlighter>
+            </SyntaxHighlighter> */}
 
             <p>
               This will generate a{" "}
@@ -383,8 +380,8 @@ Quit`}
               Navigate to the root directory of your hello-world project in your
               command line and type
             </p>
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
+
+            {/* <SyntaxHighlighter
               language="javascript"
               style={vscDarkPlus}
               customStyle={{
@@ -392,7 +389,7 @@ Quit`}
               }}
             >
               {`mkdir contracts\nmkdir scripts`}
-            </SyntaxHighlighter>
+            </SyntaxHighlighter> */}
 
             <p>
               <span className="bg-[#2D2D2D]">contracts/</span> is where
@@ -438,8 +435,8 @@ Quit`}
               in the contents below into your HelloWorld.sol file, and be sure
               to read the comments to understand what this contract does:
             </p>
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
+
+            {/* <SyntaxHighlighter
               language="javascript"
               style={vscDarkPlus}
               customStyle={{
@@ -478,7 +475,7 @@ contract HelloWorld {
       emit UpdatedMessages(oldMsg, newMessage);
    }
 }`}
-            </SyntaxHighlighter>
+            </SyntaxHighlighter> */}
 
             <p>
               This is a super simple smart contract that stores a message upon
@@ -518,8 +515,8 @@ contract HelloWorld {
             </p>
 
             <p>First, install the dotenv package in your project directory:</p>
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
+
+            {/* <SyntaxHighlighter
               language="javascript"
               style={vscDarkPlus}
               customStyle={{
@@ -527,7 +524,7 @@ contract HelloWorld {
               }}
             >
               {`npm install dotenv --save`}
-            </SyntaxHighlighter>
+            </SyntaxHighlighter> */}
 
             <p>
               This is a super simple smart contract that stores a message upon
@@ -570,8 +567,8 @@ contract HelloWorld {
               Your <span className="bg-[#2D2D2D]">.env</span> should look like
               this:
             </p>
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
+
+            {/* <SyntaxHighlighter
               language="javascript"
               style={vscDarkPlus}
               customStyle={{
@@ -579,7 +576,7 @@ contract HelloWorld {
               }}
             >
               {`API_URL = "https://eth-goerli.alchemyapi.io/v2/your-api-key"\nPRIVATE_KEY = "your-metamask-private-key"`}
-            </SyntaxHighlighter>
+            </SyntaxHighlighter> */}
 
             <p>
               To actually connect these to our code, we&apos;ll reference these
@@ -613,8 +610,8 @@ contract HelloWorld {
             </p>
 
             <p>In your project directory type:</p>
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
+
+            {/* <SyntaxHighlighter
               language="javascript"
               style={vscDarkPlus}
               customStyle={{
@@ -622,7 +619,7 @@ contract HelloWorld {
               }}
             >
               {`npm install --save-dev @nomiclabs/hardhat-ethers "ethers@^5.0.0"`}
-            </SyntaxHighlighter>
+            </SyntaxHighlighter> */}
 
             <p>
               We&apos;ll also require ethers in our{" "}
@@ -647,36 +644,8 @@ contract HelloWorld {
               <span className="bg-[#2D2D2D]">hardhat.config.js</span> to look
               like this:
             </p>
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
-              language="javascript"
-              style={vscDarkPlus}
-              customStyle={{
-                marginTop: "1rem",
-              }}
-            >
-              {`
-/**
- * @type import('hardhat/config').HardhatUserConfig
- */
-require('dotenv').config();
-require("@nomiclabs/hardhat-ethers");
 
-const { API_URL, PRIVATE_KEY } = process.env;
-
-module.exports = {
-  solidity: "0.7.3",
-  defaultNetwork: "goerli",
-  networks: {
-    hardhat: {},
-    goerli: {
-      url: API_URL,
-      accounts: ["0x${"PRIVATE_KEY"}"]
-    }
-  },
-};
-`}
-            </SyntaxHighlighter>
+            
           </div>
         </li>
         <li className="space-y-5">
@@ -690,8 +659,8 @@ module.exports = {
             </p>
 
             <p>From the command line run:</p>
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
+
+            {/* <SyntaxHighlighter
               language="javascript"
               style={vscDarkPlus}
               customStyle={{
@@ -701,7 +670,7 @@ module.exports = {
               {`
 npx hardhat compile
 `}
-            </SyntaxHighlighter>
+            </SyntaxHighlighter> */}
 
             <p>
               You might get a warning about SPDX license identifier not provided
@@ -738,8 +707,7 @@ npx hardhat compile
               following contents to it:
             </p>
 
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
+            {/* <SyntaxHighlighter
               language="javascript"
               style={vscDarkPlus}
               customStyle={{
@@ -762,7 +730,7 @@ main()
     process.exit(1);
   });
 `}
-            </SyntaxHighlighter>
+            </SyntaxHighlighter> */}
 
             <p>
               Hardhat does an amazing job of explaining what each of these lines
@@ -775,8 +743,8 @@ main()
               </Link>
               , we&apos;ve adopted their explanations here.
             </p>
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
+
+            {/* <SyntaxHighlighter
               language="javascript"
               style={vscDarkPlus}
               customStyle={{
@@ -786,7 +754,7 @@ main()
               {`
 const HelloWorld = await ethers.getContractFactory("HelloWorld");
 `}
-            </SyntaxHighlighter>
+            </SyntaxHighlighter> */}
 
             <p>
               A <span className="bg-[#2D2D2D]">ContractFactory</span> in
@@ -798,8 +766,8 @@ const HelloWorld = await ethers.getContractFactory("HelloWorld");
               <span className="bg-[#2D2D2D]">Contract</span>, instances are
               connected to the first signer (owner) by default.
             </p>
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
+
+            {/* <SyntaxHighlighter
               language="javascript"
               style={vscDarkPlus}
               customStyle={{
@@ -809,7 +777,7 @@ const HelloWorld = await ethers.getContractFactory("HelloWorld");
               {`
 const hello_world = await HelloWorld.deploy();
 `}
-            </SyntaxHighlighter>
+            </SyntaxHighlighter> */}
 
             <p>
               Calling <span className="bg-[#2D2D2D]">deploy()</span> on a{" "}
@@ -829,8 +797,8 @@ const hello_world = await HelloWorld.deploy();
               We&apos;re finally ready to deploy our smart contract! Navigate to
               the command line and run:
             </p>
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
+
+            {/* <SyntaxHighlighter
               language="javascript"
               style={vscDarkPlus}
               customStyle={{
@@ -840,11 +808,11 @@ const hello_world = await HelloWorld.deploy();
               {`
 npx hardhat run scripts/deploy.js --network goerli
 `}
-            </SyntaxHighlighter>
+            </SyntaxHighlighter> */}
 
             <p>You should then see something like:</p>
-            {/* @ts-expect-error Server Component */}
-            <SyntaxHighlighter
+
+            {/* <SyntaxHighlighter
               language="javascript"
               style={vscDarkPlus}
               customStyle={{
@@ -854,12 +822,12 @@ npx hardhat run scripts/deploy.js --network goerli
               {`
 Contract deployed to address: 0xCAFBf889bef0617d9209Cf96f18c850e901A6D61
 `}
-            </SyntaxHighlighter>
+            </SyntaxHighlighter> */}
 
             <p>
               Please copy and paste this address to save it somewhere, as we
-              will be using this address for later tutorials, so you don&apos;t want
-              to lose it.
+              will be using this address for later tutorials, so you don&apos;t
+              want to lose it.
             </p>
 
             <p>
