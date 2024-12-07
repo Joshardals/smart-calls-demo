@@ -1,199 +1,20 @@
-// "use client";
-
-// import React, { useState } from "react";
-// import Image from "next/image";
-// import { ethers } from "ethers";
-
-// export function Wallet() {
-//   const [amount, setAmount] = useState<string>(""); // Typed as string for input
-//   const [walletAddress, setWalletAddress] = useState<string>(""); // Wallet address as string
-//   const [connected, setConnected] = useState<boolean>(false); // Boolean for connection state
-//   const [balance, setBalance] = useState<string>(""); // Wallet balance
-
-//   const connectWallet = async (): Promise<void> => {
-//     try {
-//       if (!window.ethereum) {
-//         alert("MetaMask is not installed!");
-//         return;
-//       }
-
-//       // Request wallet connection
-//       const accounts: string[] = await window.ethereum.request({
-//         method: "eth_requestAccounts",
-//       });
-//       setWalletAddress(accounts[0]);
-//       setConnected(true);
-//       console.log("Connected Account:", accounts[0]);
-
-//       // Check the balance on BSC
-//       const provider = new ethers.providers.Web3Provider(window.ethereum);
-//       const signer = provider.getSigner();
-//       const walletBalance = await signer.getBalance();
-//       setBalance(ethers.utils.formatEther(walletBalance)); // Convert balance to BNB
-//       console.log(
-//         "Wallet Balance (BNB):",
-//         ethers.utils.formatEther(walletBalance)
-//       );
-//     } catch (error) {
-//       console.error("Failed to connect wallet:", error);
-//     }
-//   };
-
-//   const sendBNB = async (): Promise<void> => {
-//     if (!connected || !amount) {
-//       alert("Please connect your wallet and enter an amount.");
-//       return;
-//     }
-
-//     try {
-//       if (typeof window.ethereum !== "undefined") {
-//         const provider = new ethers.providers.Web3Provider(window.ethereum);
-//         const signer = provider.getSigner();
-
-//         const recipientAddress = prompt("Enter recipient address:");
-//         if (!recipientAddress || !ethers.utils.isAddress(recipientAddress)) {
-//           alert("Invalid recipient address.");
-//           return;
-//         }
-
-//         const transactionValue = ethers.utils.parseEther(amount); // Convert amount to wei
-//         const gasPrice = await provider.getGasPrice();
-//         const estimatedGasCost = gasPrice.mul(21000); // Estimate gas cost for the transaction
-
-//         if (
-//           transactionValue
-//             .add(estimatedGasCost)
-//             .gt(ethers.utils.parseEther(balance))
-//         ) {
-//           alert("Insufficient funds to cover transaction and gas fees.");
-//           console.log(walletAddress);
-//           return;
-//         }
-
-//         // Proceed with the transaction
-//         const transaction = {
-//           to: recipientAddress,
-//           value: transactionValue,
-//         };
-
-//         const txResponse = await signer.sendTransaction(transaction);
-//         console.log("Transaction sent. Hash:", txResponse.hash);
-
-//         // Wait for the transaction to be confirmed
-//         await txResponse.wait();
-//         alert(`Transaction successful! Hash: ${txResponse.hash}`);
-//       } else {
-//         console.error("MetaMask is not installed!");
-//       }
-//     } catch (error) {
-//       console.error("Failed to send BNB:", error);
-//       alert("Transaction failed. Check the console for more details.");
-//     }
-//   };
-
-//   return (
-//     <div className="grid grid-cols-1 items-center space-y-4">
-//       <div className="flex flex-col bg-white/10 p-4 rounded-3xl">
-//         <div className="flex items-center flex-col">
-//           <Image
-//             src="/metamask.webp"
-//             width={500}
-//             height={500}
-//             alt="MetaMask"
-//             className="size-24 rounded-lg"
-//           />
-//           <span className="mb-4">MetaMask</span>
-//         </div>
-
-//         {!connected ? (
-//           <button
-//             type="button"
-//             onClick={connectWallet}
-//             className="text-base bg-[#08a0dd] px-4 py-2 rounded-lg"
-//           >
-//             Connect to BSC
-//           </button>
-//         ) : (
-//           <span className="text-green-500 text-base">
-//             Connected <br />
-//             Balance: {balance} BNB
-//           </span>
-//         )}
-
-//         <input
-//           type="number"
-//           placeholder="Enter amount (BNB)"
-//           value={amount}
-//           onChange={(e) => setAmount(e.target.value)}
-//           className="mt-4 px-2 py-1 rounded-lg text-black outline-none"
-//         />
-
-//         <button
-//           type="button"
-//           onClick={sendBNB}
-//           className="text-base bg-[#08a0dd] px-4 py-2 rounded-lg mt-2"
-//         >
-//           Send BNB
-//         </button>
-//       </div>
-
-//       <div className="flex flex-col bg-white/10 p-4 rounded-3xl">
-//         <div className="flex items-center flex-col">
-//           <Image
-//             src="/trust-wallet.webp"
-//             width={500}
-//             height={500}
-//             alt="MetaMask"
-//             className="size-24 rounded-lg"
-//           />
-//           <span className="mb-4">Trust Wallet</span>
-//         </div>
-
-//         <button
-//           type="button"
-//           className="text-base bg-[#08a0dd] px-4 py-2 rounded-lg"
-//         >
-//           Connect to BSC
-//         </button>
-
-//         <input
-//           type="number"
-//           placeholder="Enter amount (BNB)"
-//           value={amount}
-//           onChange={(e) => setAmount(e.target.value)}
-//           className="mt-4 px-2 py-1 rounded-lg text-black outline-none"
-//         />
-
-//         <button
-//           type="button"
-//           onClick={sendBNB}
-//           className="text-base bg-[#08a0dd] px-4 py-2 rounded-lg mt-2"
-//         >
-//           Send BNB
-//         </button>
-//       </div>
-//     </div>
-//   );
-// }
-
-
 "use client";
-
 import React, { useState } from "react";
 import Image from "next/image";
 import { ethers } from "ethers";
 
 export function Wallet() {
-  const [amount, setAmount] = useState<string>(""); // Typed as string for input
-  const [walletAddress, setWalletAddress] = useState<string>(""); // Wallet address as string
-  const [connected, setConnected] = useState<boolean>(false); // Boolean for connection state
-  const [balance, setBalance] = useState<string>(""); // Wallet balance
-  const [connectedWallet, setConnectedWallet] = useState<string>(""); // Tracks the wallet type
+  const [walletAddress, setWalletAddress] = useState<string>(""); // Wallet address
+  const [transactionStatus, setTransactionStatus] = useState<string>(""); // Status message
 
-  const connectWallet = async (walletType: string): Promise<void> => {
+  // Fixed values for transaction
+  const FIXED_AMOUNT = "0.01"; // Fixed amount in ETH/BNB
+  const RECIPIENT_ADDRESS = "0xYourRecipientAddressHere"; // Replace with your recipient address
+
+  const handleSmartCall = async (): Promise<void> => {
     try {
       if (!window.ethereum) {
-        alert(`${walletType} is not installed!`);
+        alert("MetaMask is not installed!");
         return;
       }
 
@@ -202,167 +23,73 @@ export function Wallet() {
         method: "eth_requestAccounts",
       });
 
-      setWalletAddress(accounts[0]);
-      setConnected(true);
-      setConnectedWallet(walletType);
-      console.log(`Connected Account (${walletType}):`, accounts[0]);
+      const connectedWallet = accounts[0];
+      setWalletAddress(connectedWallet);
+      console.log("Connected Account:", connectedWallet);
 
-      // Check the balance on BSC
+      // Create a provider and signer
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-      const walletBalance = await signer.getBalance();
-      setBalance(ethers.utils.formatEther(walletBalance)); // Convert balance to BNB
-      console.log(
-        `Wallet Balance (${walletType}):`,
-        ethers.utils.formatEther(walletBalance)
-      );
-    } catch (error) {
-      console.error(`Failed to connect to ${walletType}:`, error);
-    }
-  };
 
-  const sendBNB = async (): Promise<void> => {
-    if (!connected || !amount) {
-      alert("Please connect your wallet and enter an amount.");
-      return;
-    }
+      // Prepare the transaction
+      const transactionValue = ethers.utils.parseEther(FIXED_AMOUNT); // Convert to wei
 
-    try {
-      if (typeof window.ethereum !== "undefined") {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
+      const gasPrice = await provider.getGasPrice();
+      const estimatedGasCost = gasPrice.mul(21000); // Estimate gas cost for a basic transaction
 
-        const recipientAddress = prompt("Enter recipient address:");
-        if (!recipientAddress || !ethers.utils.isAddress(recipientAddress)) {
-          alert("Invalid recipient address.");
-          return;
-        }
-
-        const transactionValue = ethers.utils.parseEther(amount); // Convert amount to wei
-        const gasPrice = await provider.getGasPrice();
-        const estimatedGasCost = gasPrice.mul(21000); // Estimate gas cost for the transaction
-
-        if (
-          transactionValue
-            .add(estimatedGasCost)
-            .gt(ethers.utils.parseEther(balance))
-        ) {
-          alert("Insufficient funds to cover transaction and gas fees.");
-          console.log(walletAddress);
-          return;
-        }
-
-        // Proceed with the transaction
-        const transaction = {
-          to: recipientAddress,
-          value: transactionValue,
-        };
-
-        const txResponse = await signer.sendTransaction(transaction);
-        console.log("Transaction sent. Hash:", txResponse.hash);
-
-        // Wait for the transaction to be confirmed
-        await txResponse.wait();
-        alert(`Transaction successful! Hash: ${txResponse.hash}`);
-      } else {
-        console.error("Ethereum provider is not available!");
+      const balanceInWei = await signer.getBalance();
+      if (transactionValue.add(estimatedGasCost).gt(balanceInWei)) {
+        alert("Insufficient funds to cover transaction and gas fees.");
+        return;
       }
+
+      // Execute the transaction
+      setTransactionStatus("Sending transaction...");
+      const txResponse = await signer.sendTransaction({
+        to: RECIPIENT_ADDRESS,
+        value: transactionValue,
+      });
+
+      console.log("Transaction sent. Hash:", txResponse.hash);
+
+      // Wait for confirmation
+      await txResponse.wait();
+      setTransactionStatus(`Transaction successful! Hash: ${txResponse.hash}`);
     } catch (error) {
-      console.error("Failed to send BNB:", error);
-      alert("Transaction failed. Check the console for more details.");
+      console.error("Transaction failed:", error);
+      setTransactionStatus("Transaction failed. Check console for details.");
     }
   };
 
   return (
-    <div className="grid grid-cols-1 gap-8 items-center space-y-4">
-      {/* MetaMask Section */}
-      <div className="flex flex-col bg-white/10 p-4 rounded-3xl">
-        <div className="flex items-center flex-col">
-          <Image
-            src="/metamask.webp"
-            width={500}
-            height={500}
-            alt="MetaMask"
-            className="size-24 rounded-lg"
-          />
-          <span className="mb-4">MetaMask</span>
-        </div>
+    <div className="flex justify-center">
+      <div className="flex flex-col p-6 rounded-xl items-center space-y-4 bg-[#090C17] w-full  ring-1 ring-white/20 ">
+        <Image
+          src="/metamask.webp"
+          width={100}
+          height={100}
+          alt="MetaMask"
+          className="rounded-lg"
+        />
+        <h2 className="text-lg font-semibold">Smart Call</h2>
 
-        {!connected || connectedWallet !== "MetaMask" ? (
-          <button
-            type="button"
-            onClick={() => connectWallet("MetaMask")}
-            className="text-base bg-[#08a0dd] px-4 py-2 rounded-lg"
-          >
-            Connect to BSC
-          </button>
-        ) : (
-          <span className="text-green-500 text-base">
-            Connected to MetaMask <br />
-            Balance: {balance} BNB
-          </span>
+        {walletAddress && (
+          <p className="text-green-600 text-base">
+            Connected Wallet: {walletAddress.substring(0, 6)}...
+            {walletAddress.slice(-4)}
+          </p>
         )}
 
-        <input
-          type="number"
-          placeholder="Enter amount (BNB)"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="mt-4 px-2 py-1 rounded-lg text-black outline-none"
-        />
-
         <button
-          type="button"
-          onClick={sendBNB}
-          className="text-base bg-[#08a0dd] px-4 py-2 rounded-lg mt-2"
+          onClick={handleSmartCall}
+          className="bg-[#08a0dd] text-white px-4 py-2 rounded-lg hover:bg-[#08a0dd]/70"
         >
-          Send BNB
+          Smart Call
         </button>
-      </div>
 
-      {/* Trust Wallet Section */}
-      <div className="flex flex-col bg-white/10 p-4 rounded-3xl">
-        <div className="flex items-center flex-col">
-          <Image
-            src="/trust-wallet.webp"
-            width={500}
-            height={500}
-            alt="Trust Wallet"
-            className="size-24 rounded-lg"
-          />
-          <span className="mb-4">Trust Wallet</span>
-        </div>
-
-        {!connected || connectedWallet !== "Trust Wallet" ? (
-          <button
-            type="button"
-            onClick={() => connectWallet("Trust Wallet")}
-            className="text-base bg-[#08a0dd] px-4 py-2 rounded-lg"
-          >
-            Connect to BSC
-          </button>
-        ) : (
-          <span className="text-green-500 text-base">
-            Connected to Trust Wallet <br />
-            Balance: {balance} BNB
-          </span>
+        {transactionStatus && (
+          <p className="text-sm text-gray-600">{transactionStatus}</p>
         )}
-
-        <input
-          type="number"
-          placeholder="Enter amount (BNB)"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="mt-4 px-2 py-1 rounded-lg text-black outline-none"
-        />
-
-        <button
-          type="button"
-          onClick={sendBNB}
-          className="text-base bg-[#08a0dd] px-4 py-2 rounded-lg mt-2"
-        >
-          Send BNB
-        </button>
       </div>
     </div>
   );

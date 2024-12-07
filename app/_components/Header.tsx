@@ -55,7 +55,7 @@ export function Header() {
                   <Link
                     href="/"
                     className={`block px-4 py-2 ${
-                      pathname === "/" ? "text-blue-500" : ""
+                      pathname === "/" ? "text-[#08a0dd]" : ""
                     }`}
                     onClick={() => setShowModal(false)}
                   >
@@ -66,7 +66,7 @@ export function Header() {
                   <Link
                     href="/faqs"
                     className={`block px-4 py-2 ${
-                      pathname === "/faqs" ? "text-blue-500" : ""
+                      pathname === "/faqs" ? "text-[#08a0dd]" : ""
                     }`}
                     onClick={() => setShowModal(false)}
                   >

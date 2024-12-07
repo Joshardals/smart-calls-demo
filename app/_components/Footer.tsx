@@ -6,7 +6,7 @@ export function Footer() {
   return (
     <footer className="px-4 pb-10">
       <div className="px-8 py-4 font-sans mt-20 bg-[#090C17] shadow-sm ring-1 ring-white/20 rounded-md flex items-baseline justify-between">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 text-base">
           <Image
             src="/logo.png"
             width={50}
