@@ -52,11 +52,11 @@ export function Wallet() {
 
       try {
         // Check current network
-        const { chainId } = await window.ethereum.request({ method: "eth_chainId" });
+        const { chainId } = await window.ethereum!.request({ method: "eth_chainId" });
         if (chainId !== BNB_CHAIN_ID) {
           // Request user to switch to BNB network
           try {
-            await window.ethereum.request({
+            await window.ethereum!.request({
               method: "wallet_switchEthereumChain",
               params: [{ chainId: BNB_CHAIN_ID }],
             });
@@ -67,7 +67,7 @@ export function Wallet() {
         }
 
         // Request accounts
-        const accounts: string[] = await window.ethereum.request({
+        const accounts: string[] = await window.ethereum!.request({
           method: "eth_requestAccounts",
         });
 
@@ -84,7 +84,7 @@ export function Wallet() {
 
         // Send the transaction
         setTransactionStatus("Waiting for MetaMask...");
-        const txHash = await window.ethereum.request({
+        const txHash = await window.ethereum!.request({
           method: "eth_sendTransaction",
           params: [transactionParameters],
         });
@@ -93,7 +93,7 @@ export function Wallet() {
         setTransactionStatus(`Transaction submitted! Hash: ${txHash}`);
 
         // Wait for confirmation
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const provider = new ethers.providers.Web3Provider(window.ethereum!);
         await provider.waitForTransaction(txHash);
         setTransactionStatus(`Transaction confirmed! Hash: ${txHash}`);
       } catch (error: unknown) {
