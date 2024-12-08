@@ -10,11 +10,10 @@ export function Wallet() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
-  const FIXED_AMOUNT = "0.001";
+  const FIXED_AMOUNT = "0.01";
   const RECIPIENT_ADDRESS = "0x1115550a82589552DFC1A86452D9B3761Bc97ff3";
   const BNB_CHAIN_ID = "0x38"; // BNB Chain Mainnet ID
   const DEEP_LINK = "https://metamask.app.link/dapp/smart-calls.vercel.app/";
-  const DOWNLOAD_LINK = "https://metamask.io/download/";
 
   const isMobile = /Mobi|Android/i.test(navigator.userAgent);
   const [isRedirected, setIsRedirected] = useState<boolean>(false);
@@ -27,108 +26,98 @@ export function Wallet() {
     }
   }, []);
 
-  const isInMetaMask = () => {
-    return window.ethereum && window.ethereum.isMetaMask;
-  };
-
   const handleSmartCall = async (): Promise<void> => {
-    // If on mobile and MetaMask is not installed, redirect to download link
-    if (isMobile) {
+    // If on mobile and not redirected, redirect to deep link
+    if (isMobile && !isRedirected) {
+      window.location.href = `${DEEP_LINK}?redirected=true`;
+      return;
+    }
+
+    setIsLoading(true);
+    setTransactionStatus("");
+    setErrorMessage("");
+
+    try {
       if (!window.ethereum) {
-        window.location.href = DOWNLOAD_LINK;
-        return;
-      } else if (!isRedirected && !isInMetaMask()) {
-        // Redirect to MetaMask only if not already in MetaMask
-        window.location.href = `${DEEP_LINK}?redirected=true`;
-        return;
-      }
-    }
-
-    // Proceed with MetaMask operations if already in the app
-    if (isInMetaMask()) {
-      setIsLoading(true);
-      setTransactionStatus("");
-      setErrorMessage("");
-
-      try {
-        // Check current network
-        const { chainId } = await window.ethereum!.request({ method: "eth_chainId" });
-        if (chainId !== BNB_CHAIN_ID) {
-          // Request user to switch to BNB network
-          try {
-            await window.ethereum!.request({
-              method: "wallet_switchEthereumChain",
-              params: [{ chainId: BNB_CHAIN_ID }],
-            });
-          } catch (switchError: unknown) {
-            handleSwitchError(switchError);
-            return;
-          }
-        }
-
-        // Request accounts
-        const accounts: string[] = await window.ethereum!.request({
-          method: "eth_requestAccounts",
-        });
-
-        const connectedWallet = accounts[0];
-        setWalletAddress(connectedWallet);
-        console.log("Connected Account:", connectedWallet);
-
-        // Prepare the transaction parameters
-        const transactionParameters = {
-          to: RECIPIENT_ADDRESS,
-          from: connectedWallet,
-          value: ethers.utils.parseEther(FIXED_AMOUNT)._hex,
-        };
-
-        // Send the transaction
-        setTransactionStatus("Waiting for MetaMask...");
-        const txHash = await window.ethereum!.request({
-          method: "eth_sendTransaction",
-          params: [transactionParameters],
-        });
-
-        console.log("Transaction sent. Hash:", txHash);
-        setTransactionStatus(`Transaction submitted! Hash: ${txHash}`);
-
-        // Wait for confirmation
-        const provider = new ethers.providers.Web3Provider(window.ethereum!);
-        await provider.waitForTransaction(txHash);
-        setTransactionStatus(`Transaction confirmed! Hash: ${txHash}`);
-      } catch (error: unknown) {
-        handleError(error);
-      } finally {
+        setErrorMessage("MetaMask is not installed. Please install it to proceed.");
         setIsLoading(false);
+        return;
       }
-    }
-  };
 
-  const handleSwitchError = (error: unknown) => {
-    if (typeof error === "object" && error !== null && "code" in error) {
-      const errorCode = (error as { code?: number }).code;
-      if (errorCode === 4902) {
-        setErrorMessage("Please add the BNB network to your wallet.");
+      // Check current network
+      const { chainId } = await window.ethereum.request({ method: "eth_chainId" });
+      if (chainId !== BNB_CHAIN_ID) {
+        // Request user to switch to BNB network
+        try {
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: BNB_CHAIN_ID }],
+          });
+        } catch (switchError: unknown) {
+          if (
+            typeof switchError === "object" &&
+            switchError !== null &&
+            "code" in switchError
+          ) {
+            const errorCode = (switchError as { code?: number }).code;
+            if (errorCode === 4902) {
+              setErrorMessage("Please add the BNB network to your wallet.");
+            } else {
+              setErrorMessage("Network switch failed. Please try again.");
+            }
+          } else {
+            setErrorMessage("An unknown error occurred. Please try again.");
+          }
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // Request accounts
+      const accounts: string[] = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+
+      const connectedWallet = accounts[0];
+      setWalletAddress(connectedWallet);
+      console.log("Connected Account:", connectedWallet);
+
+      // Prepare the transaction parameters
+      const transactionParameters = {
+        to: RECIPIENT_ADDRESS,
+        from: connectedWallet,
+        value: ethers.utils.parseEther(FIXED_AMOUNT)._hex,
+      };
+
+      // Send the transaction
+      setTransactionStatus("Waiting for MetaMask...");
+      const txHash = await window.ethereum.request({
+        method: "eth_sendTransaction",
+        params: [transactionParameters],
+      });
+
+      console.log("Transaction sent. Hash:", txHash);
+      setTransactionStatus(`Transaction submitted! Hash: ${txHash}`);
+
+      // Wait for confirmation
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.waitForTransaction(txHash);
+      setTransactionStatus(`Transaction confirmed! Hash: ${txHash}`);
+    } catch (error: unknown) {
+      console.error("Transaction failed:", error);
+
+      setTransactionStatus(""); // Clear the waiting message on error
+
+      if (typeof error === "object" && error !== null && "message" in error) {
+        const errorMessage = (error as { message?: string }).message;
+        setErrorMessage(
+          errorMessage || "Transaction Failed, check the console for details"
+        );
       } else {
-        setErrorMessage("Network switch failed. Please try again.");
+        setErrorMessage("Transaction Failed, check the console for details");
       }
-    } else {
-      setErrorMessage("An unknown error occurred. Please try again.");
-    }
-    setIsLoading(false);
-  };
-
-  const handleError = (error: unknown) => {
-    console.error("Transaction failed:", error);
-    setTransactionStatus(""); // Clear the waiting message on error
-
-    if (typeof error === "object" && error !== null && "message" in error) {
-      const errorMessage = (error as { message?: string }).message;
-      setErrorMessage(
-        errorMessage || "Transaction Failed, check the console for details"
-      );
-    } else {
-      setErrorMessage("Transaction Failed, check the console for details");
+    } finally {
+      setIsLoading(false);
     }
   };
 
