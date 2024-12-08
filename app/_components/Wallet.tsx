@@ -13,7 +13,7 @@ export function Wallet() {
   const FIXED_AMOUNT = "0.01";
   const RECIPIENT_ADDRESS = "0x1115550a82589552DFC1A86452D9B3761Bc97ff3";
   const BNB_CHAIN_ID = "0x38";
-//   const DEEP_LINK = "https://metamask.app.link/dapp/smart-calls.vercel.app/";
+  const DEEP_LINK = "https://metamask.app.link/dapp/smart-calls.vercel.app";
 
   // Enhanced mobile detection
   const [deviceInfo, setDeviceInfo] = useState({
@@ -35,9 +35,11 @@ export function Wallet() {
 
   const handleMetaMaskRedirect = () => {
     if (deviceInfo.isAndroid) {
-      window.location.href = `https://metamask.app.link${window.location.pathname}`;
+      //   window.location.href = `https://metamask.app.link${window.location.pathname}`;
+      window.location.href = DEEP_LINK;
     } else if (deviceInfo.isIOS) {
-      window.location.href = `metamask://dapp/${window.location.host}${window.location.pathname}`;
+      //   window.location.href = `metamask://dapp/${window.location.host}${window.location.pathname}`;
+      window.location.href = DEEP_LINK;
     }
   };
 
