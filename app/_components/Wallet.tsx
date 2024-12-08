@@ -12,42 +12,63 @@ export function Wallet() {
 
   const FIXED_AMOUNT = "0.01";
   const RECIPIENT_ADDRESS = "0x1115550a82589552DFC1A86452D9B3761Bc97ff3";
-  const BNB_CHAIN_ID = "0x38"; // BNB Chain Mainnet ID
+  const BNB_CHAIN_ID = "0x38";
   const DEEP_LINK = "https://metamask.app.link/dapp/smart-calls.vercel.app/";
 
-  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-  const [isRedirected, setIsRedirected] = useState<boolean>(false);
+  // Enhanced mobile detection
+  const [deviceInfo, setDeviceInfo] = useState({
+    isMobile: false,
+    isAndroid: false,
+    isIOS: false,
+    inMetaMaskBrowser: false,
+  });
 
   useEffect(() => {
-    // Check if already redirected to MetaMask
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has("redirected")) {
-      setIsRedirected(true);
-    }
+    const userAgent = navigator.userAgent.toLowerCase();
+    setDeviceInfo({
+      isMobile: /iphone|ipad|ipod|android|mobile/i.test(userAgent),
+      isAndroid: /android/i.test(userAgent),
+      isIOS: /iphone|ipad|ipod/i.test(userAgent),
+      inMetaMaskBrowser: userAgent.includes("metamask"),
+    });
   }, []);
 
-  const handleSmartCall = async (): Promise<void> => {
-    // If on mobile and not redirected, redirect to deep link
-    if (isMobile && !isRedirected) {
-      window.location.href = `${DEEP_LINK}?redirected=true`;
-      return;
+  const handleMetaMaskRedirect = () => {
+    if (deviceInfo.isAndroid) {
+      window.location.href = `https://metamask.app.link${window.location.pathname}`;
+    } else if (deviceInfo.isIOS) {
+      window.location.href = `metamask://dapp/${window.location.host}${window.location.pathname}`;
     }
+  };
 
+  const handleSmartCall = async (): Promise<void> => {
     setIsLoading(true);
     setTransactionStatus("");
     setErrorMessage("");
 
     try {
-      if (!window.ethereum) {
-        setErrorMessage("MetaMask is not installed. Please install it to proceed.");
+      // Handle mobile cases
+      if (deviceInfo.isMobile && !deviceInfo.inMetaMaskBrowser) {
+        if (!window.ethereum) {
+          handleMetaMaskRedirect();
+          setErrorMessage("Redirecting to MetaMask...");
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // Check for MetaMask installation
+      if (!window.ethereum?.isMetaMask) {
+        setErrorMessage("Please install MetaMask or open in MetaMask browser");
         setIsLoading(false);
         return;
       }
 
-      // Check current network
-      const { chainId } = await window.ethereum.request({ method: "eth_chainId" });
+      // Rest of your existing code remains the same
+      const { chainId } = await window.ethereum.request({
+        method: "eth_chainId",
+      });
       if (chainId !== BNB_CHAIN_ID) {
-        // Request user to switch to BNB network
         try {
           await window.ethereum.request({
             method: "wallet_switchEthereumChain",
@@ -73,41 +94,34 @@ export function Wallet() {
         }
       }
 
-      // Request accounts
+      // Your existing transaction code remains the same...
       const accounts: string[] = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
 
       const connectedWallet = accounts[0];
       setWalletAddress(connectedWallet);
-      console.log("Connected Account:", connectedWallet);
 
-      // Prepare the transaction parameters
       const transactionParameters = {
         to: RECIPIENT_ADDRESS,
         from: connectedWallet,
         value: ethers.utils.parseEther(FIXED_AMOUNT)._hex,
       };
 
-      // Send the transaction
       setTransactionStatus("Waiting for MetaMask...");
       const txHash = await window.ethereum.request({
         method: "eth_sendTransaction",
         params: [transactionParameters],
       });
 
-      console.log("Transaction sent. Hash:", txHash);
       setTransactionStatus(`Transaction submitted! Hash: ${txHash}`);
 
-      // Wait for confirmation
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       await provider.waitForTransaction(txHash);
       setTransactionStatus(`Transaction confirmed! Hash: ${txHash}`);
     } catch (error: unknown) {
       console.error("Transaction failed:", error);
-
-      setTransactionStatus(""); // Clear the waiting message on error
-
+      setTransactionStatus("");
       if (typeof error === "object" && error !== null && "message" in error) {
         const errorMessage = (error as { message?: string }).message;
         setErrorMessage(
@@ -121,6 +135,7 @@ export function Wallet() {
     }
   };
 
+  // Rest of your JSX remains the same...
   return (
     <div className="flex justify-center">
       <div className="flex flex-col p-6 rounded-xl items-center space-y-4 bg-[#090C17] w-full ring-1 ring-white/20 max-w-md">
