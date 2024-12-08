@@ -35,11 +35,9 @@ export function Wallet() {
 
   const handleMetaMaskRedirect = () => {
     if (deviceInfo.isAndroid) {
-      //   window.location.href = `https://metamask.app.link${window.location.pathname}`;
-      window.location.href = DEEP_LINK;
+      window.location.href = `https://metamask.app.link${window.location.pathname}`;
     } else if (deviceInfo.isIOS) {
-      //   window.location.href = `metamask://dapp/${window.location.host}${window.location.pathname}`;
-      window.location.href = DEEP_LINK;
+      window.location.href = `metamask://dapp/${window.location.host}${window.location.pathname}`;
     }
   };
 
