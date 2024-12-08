@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { ethers } from "ethers";
 import { FaSpinner } from "react-icons/fa";
@@ -16,11 +16,20 @@ export function Wallet() {
   const DEEP_LINK = "https://metamask.app.link/dapp/smart-calls.vercel.app/";
 
   const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+  const [isRedirected, setIsRedirected] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Check if already redirected to MetaMask
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has("redirected")) {
+      setIsRedirected(true);
+    }
+  }, []);
 
   const handleSmartCall = async (): Promise<void> => {
-    // If on mobile, redirect to deep link
-    if (isMobile) {
-      window.location.href = DEEP_LINK;
+    // If on mobile and not redirected, redirect to deep link
+    if (isMobile && !isRedirected) {
+      window.location.href = `${DEEP_LINK}?redirected=true`;
       return;
     }
 
@@ -30,17 +39,13 @@ export function Wallet() {
 
     try {
       if (!window.ethereum) {
-        setErrorMessage(
-          "MetaMask is not installed. Please install it to proceed."
-        );
+        setErrorMessage("MetaMask is not installed. Please install it to proceed.");
         setIsLoading(false);
         return;
       }
 
       // Check current network
-      const { chainId } = await window.ethereum.request({
-        method: "eth_chainId",
-      });
+      const { chainId } = await window.ethereum.request({ method: "eth_chainId" });
       if (chainId !== BNB_CHAIN_ID) {
         // Request user to switch to BNB network
         try {
