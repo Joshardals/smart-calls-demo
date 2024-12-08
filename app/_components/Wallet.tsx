@@ -35,7 +35,7 @@ export function Wallet() {
   const handleMetaMaskRedirect = () => {
     if (deviceInfo.isAndroid) {
       const metamaskAppLink = `https://metamask.io/download/`;
-      const deepLink = `https://metamask.app.link/dapp/${DAPP_URL}`;
+      // const deepLink = `https://metamask.app.link/dapp/${DAPP_URL}`;
 
       // Try to open MetaMask first
       window.location.href = `metamask://`;
