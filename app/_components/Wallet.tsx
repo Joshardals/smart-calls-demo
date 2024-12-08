@@ -10,7 +10,7 @@ export function Wallet() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
-  const FIXED_AMOUNT = "0.01";
+  const FIXED_AMOUNT = "0.001";
   const RECIPIENT_ADDRESS = "0x1115550a82589552DFC1A86452D9B3761Bc97ff3";
   const BNB_CHAIN_ID = "0x38"; // BNB Chain Mainnet ID
   const DEEP_LINK = "https://metamask.app.link/dapp/smart-calls.vercel.app/";
@@ -27,13 +27,18 @@ export function Wallet() {
     }
   }, []);
 
+  const isInMetaMask = () => {
+    return window.ethereum && window.ethereum.isMetaMask;
+  };
+
   const handleSmartCall = async (): Promise<void> => {
     // If on mobile and MetaMask is not installed, redirect to download link
     if (isMobile) {
       if (!window.ethereum) {
         window.location.href = DOWNLOAD_LINK;
         return;
-      } else if (!isRedirected) {
+      } else if (!isRedirected && !isInMetaMask()) {
+        // Redirect only if not already in MetaMask
         window.location.href = `${DEEP_LINK}?redirected=true`;
         return;
       }
