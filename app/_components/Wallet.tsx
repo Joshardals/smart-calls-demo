@@ -14,6 +14,7 @@ export function Wallet() {
   const RECIPIENT_ADDRESS = "0x1115550a82589552DFC1A86452D9B3761Bc97ff3";
   const BNB_CHAIN_ID = "0x38"; // BNB Chain Mainnet ID
   const DEEP_LINK = "https://metamask.app.link/dapp/smart-calls.vercel.app/";
+  const DOWNLOAD_LINK = "https://metamask.io/download/";
 
   const isMobile = /Mobi|Android/i.test(navigator.userAgent);
   const [isRedirected, setIsRedirected] = useState<boolean>(false);
@@ -27,10 +28,15 @@ export function Wallet() {
   }, []);
 
   const handleSmartCall = async (): Promise<void> => {
-    // If on mobile and not redirected, redirect to deep link
-    if (isMobile && !isRedirected) {
-      window.location.href = `${DEEP_LINK}?redirected=true`;
-      return;
+    // If on mobile and MetaMask is not installed, redirect to download link
+    if (isMobile) {
+      if (!window.ethereum) {
+        window.location.href = DOWNLOAD_LINK;
+        return;
+      } else if (!isRedirected) {
+        window.location.href = `${DEEP_LINK}?redirected=true`;
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -39,13 +45,17 @@ export function Wallet() {
 
     try {
       if (!window.ethereum) {
-        setErrorMessage("MetaMask is not installed. Please install it to proceed.");
+        setErrorMessage(
+          "MetaMask is not installed. Please install it to proceed."
+        );
         setIsLoading(false);
         return;
       }
 
       // Check current network
-      const { chainId } = await window.ethereum.request({ method: "eth_chainId" });
+      const { chainId } = await window.ethereum.request({
+        method: "eth_chainId",
+      });
       if (chainId !== BNB_CHAIN_ID) {
         // Request user to switch to BNB network
         try {
