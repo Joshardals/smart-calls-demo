@@ -13,9 +13,8 @@ export function Wallet() {
   const FIXED_AMOUNT = "0.01";
   const RECIPIENT_ADDRESS = "0x1115550a82589552DFC1A86452D9B3761Bc97ff3";
   const BNB_CHAIN_ID = "0x38";
-//   const DEEP_LINK = "https://metamask.app.link/dapp/smart-calls.vercel.app";
+  const DAPP_URL = "smart-calls.vercel.app";
 
-  // Enhanced mobile detection
   const [deviceInfo, setDeviceInfo] = useState({
     isMobile: false,
     isAndroid: false,
@@ -34,11 +33,9 @@ export function Wallet() {
   }, []);
 
   const handleMetaMaskRedirect = () => {
-    if (deviceInfo.isAndroid) {
-      window.location.href = `https://metamask.app.link${window.location.pathname}`;
-    } else if (deviceInfo.isIOS) {
-      window.location.href = `metamask://dapp/${window.location.host}${window.location.pathname}`;
-    }
+    const metamaskAppLink = `https://metamask.app.link/dapp/${DAPP_URL}`;
+    console.log("Redirecting to:", metamaskAppLink);
+    window.location.href = metamaskAppLink;
   };
 
   const handleSmartCall = async (): Promise<void> => {
@@ -47,24 +44,22 @@ export function Wallet() {
     setErrorMessage("");
 
     try {
-      // Handle mobile cases
-      if (deviceInfo.isMobile && !deviceInfo.inMetaMaskBrowser) {
-        if (!window.ethereum) {
-          handleMetaMaskRedirect();
-          setErrorMessage("Redirecting to MetaMask...");
-          setIsLoading(false);
-          return;
-        }
-      }
-
-      // Check for MetaMask installation
-      if (!window.ethereum?.isMetaMask) {
-        setErrorMessage("Please install MetaMask or open in MetaMask browser");
+      // If MetaMask is not detected and we're on mobile
+      if (!window.ethereum?.isMetaMask && deviceInfo.isMobile) {
+        handleMetaMaskRedirect();
+        setErrorMessage("Opening MetaMask...");
         setIsLoading(false);
         return;
       }
 
-      // Rest of your existing code remains the same
+      // Check for MetaMask installation
+      if (!window.ethereum?.isMetaMask) {
+        window.open("https://metamask.io/download/", "_blank");
+        setErrorMessage("Please install MetaMask to continue");
+        setIsLoading(false);
+        return;
+      }
+
       const { chainId } = await window.ethereum.request({
         method: "eth_chainId",
       });
@@ -94,7 +89,6 @@ export function Wallet() {
         }
       }
 
-      // Your existing transaction code remains the same...
       const accounts: string[] = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
@@ -135,7 +129,6 @@ export function Wallet() {
     }
   };
 
-  // Rest of your JSX remains the same...
   return (
     <div className="flex justify-center">
       <div className="flex flex-col p-6 rounded-xl items-center space-y-4 bg-[#090C17] w-full ring-1 ring-white/20 max-w-md">
