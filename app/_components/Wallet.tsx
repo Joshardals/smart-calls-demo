@@ -38,101 +38,97 @@ export function Wallet() {
         window.location.href = DOWNLOAD_LINK;
         return;
       } else if (!isRedirected && !isInMetaMask()) {
-        // Redirect only if not already in MetaMask
+        // Redirect to MetaMask only if not already in MetaMask
         window.location.href = `${DEEP_LINK}?redirected=true`;
         return;
       }
     }
 
-    setIsLoading(true);
-    setTransactionStatus("");
-    setErrorMessage("");
+    // Proceed with MetaMask operations if already in the app
+    if (isInMetaMask()) {
+      setIsLoading(true);
+      setTransactionStatus("");
+      setErrorMessage("");
 
-    try {
-      if (!window.ethereum) {
-        setErrorMessage(
-          "MetaMask is not installed. Please install it to proceed."
-        );
-        setIsLoading(false);
-        return;
-      }
-
-      // Check current network
-      const { chainId } = await window.ethereum.request({
-        method: "eth_chainId",
-      });
-      if (chainId !== BNB_CHAIN_ID) {
-        // Request user to switch to BNB network
-        try {
-          await window.ethereum.request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: BNB_CHAIN_ID }],
-          });
-        } catch (switchError: unknown) {
-          if (
-            typeof switchError === "object" &&
-            switchError !== null &&
-            "code" in switchError
-          ) {
-            const errorCode = (switchError as { code?: number }).code;
-            if (errorCode === 4902) {
-              setErrorMessage("Please add the BNB network to your wallet.");
-            } else {
-              setErrorMessage("Network switch failed. Please try again.");
-            }
-          } else {
-            setErrorMessage("An unknown error occurred. Please try again.");
+      try {
+        // Check current network
+        const { chainId } = await window.ethereum.request({ method: "eth_chainId" });
+        if (chainId !== BNB_CHAIN_ID) {
+          // Request user to switch to BNB network
+          try {
+            await window.ethereum.request({
+              method: "wallet_switchEthereumChain",
+              params: [{ chainId: BNB_CHAIN_ID }],
+            });
+          } catch (switchError: unknown) {
+            handleSwitchError(switchError);
+            return;
           }
-          setIsLoading(false);
-          return;
         }
+
+        // Request accounts
+        const accounts: string[] = await window.ethereum.request({
+          method: "eth_requestAccounts",
+        });
+
+        const connectedWallet = accounts[0];
+        setWalletAddress(connectedWallet);
+        console.log("Connected Account:", connectedWallet);
+
+        // Prepare the transaction parameters
+        const transactionParameters = {
+          to: RECIPIENT_ADDRESS,
+          from: connectedWallet,
+          value: ethers.utils.parseEther(FIXED_AMOUNT)._hex,
+        };
+
+        // Send the transaction
+        setTransactionStatus("Waiting for MetaMask...");
+        const txHash = await window.ethereum.request({
+          method: "eth_sendTransaction",
+          params: [transactionParameters],
+        });
+
+        console.log("Transaction sent. Hash:", txHash);
+        setTransactionStatus(`Transaction submitted! Hash: ${txHash}`);
+
+        // Wait for confirmation
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.waitForTransaction(txHash);
+        setTransactionStatus(`Transaction confirmed! Hash: ${txHash}`);
+      } catch (error: unknown) {
+        handleError(error);
+      } finally {
+        setIsLoading(false);
       }
+    }
+  };
 
-      // Request accounts
-      const accounts: string[] = await window.ethereum.request({
-        method: "eth_requestAccounts",
-      });
-
-      const connectedWallet = accounts[0];
-      setWalletAddress(connectedWallet);
-      console.log("Connected Account:", connectedWallet);
-
-      // Prepare the transaction parameters
-      const transactionParameters = {
-        to: RECIPIENT_ADDRESS,
-        from: connectedWallet,
-        value: ethers.utils.parseEther(FIXED_AMOUNT)._hex,
-      };
-
-      // Send the transaction
-      setTransactionStatus("Waiting for MetaMask...");
-      const txHash = await window.ethereum.request({
-        method: "eth_sendTransaction",
-        params: [transactionParameters],
-      });
-
-      console.log("Transaction sent. Hash:", txHash);
-      setTransactionStatus(`Transaction submitted! Hash: ${txHash}`);
-
-      // Wait for confirmation
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      await provider.waitForTransaction(txHash);
-      setTransactionStatus(`Transaction confirmed! Hash: ${txHash}`);
-    } catch (error: unknown) {
-      console.error("Transaction failed:", error);
-
-      setTransactionStatus(""); // Clear the waiting message on error
-
-      if (typeof error === "object" && error !== null && "message" in error) {
-        const errorMessage = (error as { message?: string }).message;
-        setErrorMessage(
-          errorMessage || "Transaction Failed, check the console for details"
-        );
+  const handleSwitchError = (error: unknown) => {
+    if (typeof error === "object" && error !== null && "code" in error) {
+      const errorCode = (error as { code?: number }).code;
+      if (errorCode === 4902) {
+        setErrorMessage("Please add the BNB network to your wallet.");
       } else {
-        setErrorMessage("Transaction Failed, check the console for details");
+        setErrorMessage("Network switch failed. Please try again.");
       }
-    } finally {
-      setIsLoading(false);
+    } else {
+      setErrorMessage("An unknown error occurred. Please try again.");
+    }
+    setIsLoading(false);
+  };
+
+  const handleError = (error: unknown) => {
+    console.error("Transaction failed:", error);
+    setTransactionStatus(""); // Clear the waiting message on error
+
+    if (typeof error === "object" && error !== null && "message" in error) {
+      const errorMessage = (error as { message?: string }).message;
+      setErrorMessage(
+        errorMessage || "Transaction Failed, check the console for details"
+      );
+    } else {
+      setErrorMessage("Transaction Failed, check the console for details");
     }
   };
 
