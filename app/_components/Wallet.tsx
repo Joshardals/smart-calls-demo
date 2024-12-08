@@ -98,12 +98,19 @@ export function Wallet() {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       await provider.waitForTransaction(txHash);
       setTransactionStatus(`Transaction confirmed! Hash: ${txHash}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Transaction failed:", error);
+
       setTransactionStatus(""); // Clear the waiting message on error
-      setErrorMessage(
-        error.message || "Transaction Failed, check the console for details"
-      );
+
+      if (typeof error === "object" && error !== null && "message" in error) {
+        const errorMessage = (error as { message?: string }).message;
+        setErrorMessage(
+          errorMessage || "Transaction Failed, check the console for details"
+        );
+      } else {
+        setErrorMessage("Transaction Failed, check the console for details");
+      }
     } finally {
       setIsLoading(false);
     }
