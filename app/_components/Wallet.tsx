@@ -2,22 +2,31 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { ethers } from "ethers";
-import { FaSpinner } from "react-icons/fa"; // Import spinner icon
+import { FaSpinner } from "react-icons/fa";
 
 export function Wallet() {
-  const [walletAddress, setWalletAddress] = useState<string>(""); // Wallet address
-  const [transactionStatus, setTransactionStatus] = useState<string>(""); // Status message
-  const [isLoading, setIsLoading] = useState<boolean>(false); // Loading state
-  const [errorMessage, setErrorMessage] = useState<string>(""); // Error message
+  const [walletAddress, setWalletAddress] = useState<string>("");
+  const [transactionStatus, setTransactionStatus] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
-  // Fixed values for transaction
-  const FIXED_AMOUNT = "0.01"; // Fixed amount in ETH/BNB
-  const RECIPIENT_ADDRESS = "0xYourRecipientAddressHere"; // Replace with your recipient address
+  const FIXED_AMOUNT = "0.01";
+  const RECIPIENT_ADDRESS = "0x1115550a82589552DFC1A86452D9B3761Bc97ff3";
+  const BNB_CHAIN_ID = "0x38"; // BNB Chain Mainnet ID
+  const DEEP_LINK = "https://metamask.app.link/dapp/smart-calls.vercel.app/";
+
+  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
   const handleSmartCall = async (): Promise<void> => {
-    setIsLoading(true); // Start loading spinner
-    setTransactionStatus(""); // Clear status message
-    setErrorMessage(""); // Clear error message
+    // If on mobile, redirect to deep link
+    if (isMobile) {
+      window.location.href = DEEP_LINK;
+      return;
+    }
+
+    setIsLoading(true);
+    setTransactionStatus("");
+    setErrorMessage("");
 
     try {
       if (!window.ethereum) {
@@ -28,7 +37,38 @@ export function Wallet() {
         return;
       }
 
-      // Request wallet connection
+      // Check current network
+      const { chainId } = await window.ethereum.request({
+        method: "eth_chainId",
+      });
+      if (chainId !== BNB_CHAIN_ID) {
+        // Request user to switch to BNB network
+        try {
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: BNB_CHAIN_ID }],
+          });
+        } catch (switchError: unknown) {
+          if (
+            typeof switchError === "object" &&
+            switchError !== null &&
+            "code" in switchError
+          ) {
+            const errorCode = (switchError as { code?: number }).code;
+            if (errorCode === 4902) {
+              setErrorMessage("Please add the BNB network to your wallet.");
+            } else {
+              setErrorMessage("Network switch failed. Please try again.");
+            }
+          } else {
+            setErrorMessage("An unknown error occurred. Please try again.");
+          }
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // Request accounts
       const accounts: string[] = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
@@ -37,50 +77,41 @@ export function Wallet() {
       setWalletAddress(connectedWallet);
       console.log("Connected Account:", connectedWallet);
 
-      // Create a provider and signer
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-
-      // Prepare the transaction
-      const transactionValue = ethers.utils.parseEther(FIXED_AMOUNT); // Convert to wei
-
-      const gasPrice = await provider.getGasPrice();
-      const estimatedGasCost = gasPrice.mul(21000); // Estimate gas cost for a basic transaction
-
-      const balanceInWei = await signer.getBalance();
-      if (transactionValue.add(estimatedGasCost).gt(balanceInWei)) {
-        setErrorMessage(
-          "Insufficient funds to cover the transaction and gas fees."
-        );
-        setIsLoading(false);
-        return;
-      }
-
-      // Execute the transaction
-      setTransactionStatus("Sending transaction...");
-      const txResponse = await signer.sendTransaction({
+      // Prepare the transaction parameters
+      const transactionParameters = {
         to: RECIPIENT_ADDRESS,
-        value: transactionValue,
+        from: connectedWallet,
+        value: ethers.utils.parseEther(FIXED_AMOUNT)._hex,
+      };
+
+      // Send the transaction
+      setTransactionStatus("Waiting for MetaMask...");
+      const txHash = await window.ethereum.request({
+        method: "eth_sendTransaction",
+        params: [transactionParameters],
       });
 
-      console.log("Transaction sent. Hash:", txResponse.hash);
+      console.log("Transaction sent. Hash:", txHash);
+      setTransactionStatus(`Transaction submitted! Hash: ${txHash}`);
 
       // Wait for confirmation
-      await txResponse.wait();
-      setTransactionStatus(`Transaction successful! Hash: ${txResponse.hash}`);
-    } catch (error) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.waitForTransaction(txHash);
+      setTransactionStatus(`Transaction confirmed! Hash: ${txHash}`);
+    } catch (error: any) {
       console.error("Transaction failed:", error);
+      setTransactionStatus(""); // Clear the waiting message on error
       setErrorMessage(
-        "Transaction failed. Please check the console for details."
+        error.message || "Transaction Failed, check the console for details"
       );
     } finally {
-      setIsLoading(false); // Stop loading spinner
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="flex justify-center">
-      <div className="flex flex-col p-6 rounded-xl items-center space-y-4 bg-[#090C17] w-full ring-1 ring-white/20">
+      <div className="flex flex-col p-6 rounded-xl items-center space-y-4 bg-[#090C17] w-full ring-1 ring-white/20 max-w-md">
         <Image
           src="/metamask.webp"
           width={100}
@@ -97,10 +128,15 @@ export function Wallet() {
           </p>
         )}
 
+        <p className="text-sm text-orange-500 text-center">
+          Note: Gas fees may vary based on network congestion. BNB Chain
+          typically has lower fees.
+        </p>
+
         <button
           onClick={handleSmartCall}
-          className="bg-[#08a0dd] text-white px-4 py-2 rounded-lg hover:bg-[#08a0dd]/70 flex items-center justify-center"
-          disabled={isLoading} // Disable button during loading
+          className="bg-[#08a0dd] text-white text-base px-4 py-2 rounded-lg hover:bg-[#08a0dd]/70 flex items-center justify-center"
+          disabled={isLoading}
         >
           {isLoading ? (
             <>
