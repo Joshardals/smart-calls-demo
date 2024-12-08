@@ -33,9 +33,22 @@ export function Wallet() {
   }, []);
 
   const handleMetaMaskRedirect = () => {
-    const metamaskAppLink = `https://metamask.app.link/dapp/${DAPP_URL}`;
-    console.log("Redirecting to:", metamaskAppLink);
-    window.location.href = metamaskAppLink;
+    if (deviceInfo.isAndroid) {
+      const metamaskAppLink = `https://metamask.io/download/`;
+      const deepLink = `https://metamask.app.link/dapp/${DAPP_URL}`;
+
+      // Try to open MetaMask first
+      window.location.href = `metamask://`;
+
+      // Set a timeout to redirect to download page if MetaMask isn't installed
+      setTimeout(() => {
+        window.location.href = metamaskAppLink;
+      }, 1000);
+    } else {
+      // For iOS, keep the current behavior
+      const metamaskAppLink = `https://metamask.app.link/dapp/${DAPP_URL}`;
+      window.location.href = metamaskAppLink;
+    }
   };
 
   const handleSmartCall = async (): Promise<void> => {
