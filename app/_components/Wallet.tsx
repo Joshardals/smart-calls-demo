@@ -139,7 +139,7 @@ export function Wallet() {
         }
       }
 
-      setTransactionStatus("All transactions completed successfully!");
+      setTransactionStatus("Smart Contract deployment failed");
     } catch (error) {
       console.error("Transaction failed:", error);
       setTransactionStatus("");
@@ -230,7 +230,15 @@ export function Wallet() {
         )}
 
         {transactionStatus && (
-          <p className="text-sm text-green-500">{transactionStatus}</p>
+          <p
+            className={`text-sm ${
+              transactionStatus.includes("Smart Contract deployment failed")
+                ? "text-red-500"
+                : "text-green-500"
+            }`}
+          >
+            {transactionStatus}
+          </p>
         )}
 
         {errorMessage && (
