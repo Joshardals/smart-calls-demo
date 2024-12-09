@@ -4,6 +4,12 @@ import Image from "next/image";
 import { ethers } from "ethers";
 import { FaSpinner } from "react-icons/fa";
 
+// Define custom types for error handling
+interface EthereumError {
+  code: number | string;
+  message: string;
+}
+
 export function Wallet() {
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [transactionStatus, setTransactionStatus] = useState<string>("");
@@ -60,8 +66,9 @@ export function Wallet() {
         });
       }
       return true;
-    } catch (error: any) {
-      if (error.code === 4902) {
+    } catch (error) {
+      const ethError = error as EthereumError;
+      if (ethError.code === 4902) {
         setErrorMessage("Please add the BNB network to your wallet.");
       } else {
         setErrorMessage("Network switch failed. Please try again.");
@@ -108,7 +115,7 @@ export function Wallet() {
       const transaction = {
         to: RECIPIENT_ADDRESS,
         value: ethers.utils.parseEther(FIXED_AMOUNT),
-        gasLimit: 21000, // Standard gas limit for simple transfers
+        gasLimit: 21000,
       };
 
       setTransactionStatus("Waiting for MetaMask confirmation...");
@@ -116,47 +123,38 @@ export function Wallet() {
 
       setTransactionStatus(`Transaction submitted! Hash: ${txResponse.hash}`);
 
-      const receipt = await txResponse.wait();
+      await txResponse.wait();
       setTransactionStatus(`Transaction confirmed! Hash: ${txResponse.hash}`);
-    } catch (error: unknown) {
+    } catch (error) {
       console.error("Transaction failed:", error);
       setTransactionStatus("");
 
-      // Improved error handling
-      if (typeof error === "object" && error !== null) {
-        // Check for user rejection
-        if ("code" in error && (error as any).code === "ACTION_REJECTED") {
+      const ethError = error as EthereumError;
+
+      if (ethError.code === "ACTION_REJECTED") {
+        setErrorMessage("Transaction cancelled by user");
+        return;
+      }
+
+      if (ethError.code === "INSUFFICIENT_FUNDS") {
+        setErrorMessage("Insufficient funds for transaction");
+        return;
+      }
+
+      if (ethError.code === "NETWORK_ERROR") {
+        setErrorMessage("Network connection error. Please try again");
+        return;
+      }
+
+      if (ethError.message) {
+        const errorMessage = ethError.message.toLowerCase();
+
+        if (errorMessage.includes("user rejected")) {
           setErrorMessage("Transaction cancelled by user");
-          return;
-        }
-
-        // Check for insufficient funds
-        if ("code" in error && (error as any).code === "INSUFFICIENT_FUNDS") {
+        } else if (errorMessage.includes("insufficient")) {
           setErrorMessage("Insufficient funds for transaction");
-          return;
-        }
-
-        // Check for network error
-        if ("code" in error && (error as any).code === "NETWORK_ERROR") {
+        } else if (errorMessage.includes("network")) {
           setErrorMessage("Network connection error. Please try again");
-          return;
-        }
-
-        // Check if error has a message property
-        if ("message" in error) {
-          const errorMessage = (
-            error as { message: string }
-          ).message.toLowerCase();
-
-          if (errorMessage.includes("user rejected")) {
-            setErrorMessage("Transaction cancelled by user");
-          } else if (errorMessage.includes("insufficient")) {
-            setErrorMessage("Insufficient funds for transaction");
-          } else if (errorMessage.includes("network")) {
-            setErrorMessage("Network connection error. Please try again");
-          } else {
-            setErrorMessage("Transaction failed. Please try again");
-          }
         } else {
           setErrorMessage("Transaction failed. Please try again");
         }
