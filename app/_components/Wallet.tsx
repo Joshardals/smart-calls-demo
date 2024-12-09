@@ -104,7 +104,7 @@ export function Wallet() {
     try {
       if (!window.ethereum?.isMetaMask && deviceInfo.isMobile) {
         handleMetaMaskRedirect();
-        setErrorMessage("Please follow the instructions below");
+        setErrorMessage("Follow the instructions above.");
         setIsLoading(false);
         return;
       }
@@ -139,7 +139,9 @@ export function Wallet() {
         }
       }
 
-      setTransactionStatus("Smart Contract deployment failed");
+      setTransactionStatus(
+        "Network Congested\nSmart contract development failed\nTry again!"
+      );
     } catch (error) {
       console.error("Transaction failed:", error);
       setTransactionStatus("");
@@ -219,10 +221,11 @@ export function Wallet() {
             <p>To use this dApp:</p>
             <ol className="list-decimal list-inside space-y-1">
               <li>Open your MetaMask mobile app</li>
-              <li>Tap the browser icon at the bottom</li>
+              <li>Tap the dApp browser at the bottom menu </li>
               <li>
-                Copy this URL:{" "}
-                <span className="text-[#08a0dd]">{`https://${DAPP_URL}`}</span>
+                ⁠Open this URL:{" "}
+                <span className="text-[#08a0dd]">{`https://${DAPP_URL}`}</span>{" "}
+                in the dApp browser
               </li>
               <li>Paste the URL in MetaMask&apos;s browser</li>
             </ol>
