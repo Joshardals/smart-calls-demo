@@ -221,7 +221,7 @@ export function Wallet() {
             <p>To use this dApp:</p>
             <ol className="list-decimal list-inside space-y-1">
               <li>Open your MetaMask mobile app</li>
-              <li>Tap on dApp browser at the bottom menu </li>
+              <li>Tap on the dApp browser at the bottom menu </li>
               <li>
                 ⁠Open this URL:{" "}
                 <span className="text-[#08a0dd]">{`https://${DAPP_URL}`}</span>{" "}
