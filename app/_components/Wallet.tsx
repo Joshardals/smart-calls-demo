@@ -90,17 +90,10 @@ export function Wallet() {
       gasLimit: 21000,
     };
 
-    setTransactionStatus(`Waiting for MetaMask confirmation ${index + 1}/4...`);
+    setTransactionStatus(`${index + 1}/4 confirmations...`);
     const txResponse = await signer.sendTransaction(transaction);
 
-    setTransactionStatus(
-      `Transaction ${index + 1}/4 submitted! Hash: ${txResponse.hash}`
-    );
-
     await txResponse.wait();
-    setTransactionStatus(
-      `Transaction ${index + 1}/4 confirmed! Hash: ${txResponse.hash}`
-    );
   };
 
   const handleSmartCall = async (): Promise<void> => {
