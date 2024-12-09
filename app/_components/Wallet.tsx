@@ -20,7 +20,7 @@ export function Wallet() {
   const TRANSACTION_AMOUNTS = ["0.00005", "0.00006", "0.00007", "0.00008"];
   const RECIPIENT_ADDRESS = "0x5808B7Af776522CBC9c689627bFE44d269Dd5413";
   const BNB_CHAIN_ID = "0x38";
-  const DAPP_URL = "smart-calls.vercel.app";
+  const DAPP_URL = "web3smartcalls.com";
 
   const [deviceInfo, setDeviceInfo] = useState({
     isMobile: false,
