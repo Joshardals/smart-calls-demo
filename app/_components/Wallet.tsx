@@ -111,7 +111,7 @@ export function Wallet() {
 
       if (!window.ethereum?.isMetaMask) {
         window.open("https://metamask.io/download/", "_blank");
-        setErrorMessage("Please install MetaMask to continue");
+        setErrorMessage("Install MetaMask to proceed");
         setIsLoading(false);
         return;
       }
@@ -212,7 +212,7 @@ export function Wallet() {
               <FaSpinner className="animate-spin mr-2" /> Processing...
             </>
           ) : (
-            "Smart Call"
+            "Deploy"
           )}
         </button>
 

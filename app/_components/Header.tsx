@@ -12,7 +12,7 @@ export function Header() {
   return (
     <header>
       {/* Announcement Bar */}
-      <div className="bg-[#243039] text-center max-md:text-sm py-2 px-4">
+      <div className="bg-[#243039] text-center max-md:text-sm text-base py-2 px-4">
         🛠️ TypeScript libraries for Interaction with the Ethereum JSON RPC API
         on{" "}
         <Link href="https://github.com/web3/web3.js" className="text-blue-500">

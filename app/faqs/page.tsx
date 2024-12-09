@@ -1,10 +1,10 @@
 export default function page() {
   return (
     <div className="px-8 py-4 space-y-10">
-      <h3 className="text-3xl tracking-wider">FAQs</h3>
+      <h1 className="text-2xl tracking-wider">FAQs</h1>
 
       <div className="space-y-4">
-        <span className="font-medium">What are Smart Contracts?</span>
+        <span className="font-medium text-lg">What are Smart Contracts?</span>
         <p className="text-base text-pretty">
           Smart contracts are self-executing programs that run on a blockchain
           and automatically enforce the terms of an agreement when predefined
