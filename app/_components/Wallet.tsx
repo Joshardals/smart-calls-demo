@@ -232,17 +232,21 @@ export function Wallet() {
           </div>
         )}
 
-        {transactionStatus && (
-          <p
-            className={`text-sm ${
-              transactionStatus.includes("Smart Contract deployment failed")
-                ? "text-red-500"
-                : "text-green-500"
-            }`}
-          >
-            {transactionStatus}
-          </p>
-        )}
+        {transactionStatus &&
+          transactionStatus.split("\n").map((line, index) => (
+            <p
+              key={index}
+              className={`text-sm ${
+                line.includes("Network Congested") ||
+                line.includes("Smart contract development failed") ||
+                line.includes("Try again")
+                  ? "text-red-500"
+                  : "text-green-500"
+              }`}
+            >
+              {line}
+            </p>
+          ))}
 
         {errorMessage && (
           <p className="text-sm text-red-500 text-center">{errorMessage}</p>
