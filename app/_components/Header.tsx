@@ -4,15 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IoIosArrowDown } from "react-icons/io";
+import { createVisitorInfo } from "@/lib/database.action";
 
 interface VisitorData {
-  timestamp: number;
+  timestamp: string;
   pathname: string;
   userAgent: string;
   referrer: string;
   screenResolution: string;
   deviceType: string;
   language: string;
+  visitorId: string;
 }
 
 export function Header() {
@@ -20,7 +22,7 @@ export function Header() {
   const pathname = usePathname();
 
   useEffect(() => {
-    const trackVisit = () => {
+    const trackVisit = async () => {
       try {
         // Get existing visitor ID from localStorage
         let visitorId = localStorage.getItem("visitorId");
@@ -41,18 +43,22 @@ export function Header() {
 
         // Prepare visitor data
         const visitorData: VisitorData = {
-          timestamp: Date.now(),
+          timestamp: new Date().toISOString(),
           pathname: pathname,
           userAgent: navigator.userAgent,
           referrer: document.referrer,
           screenResolution: `${window.screen.width}x${window.screen.height}`,
           deviceType: deviceType,
           language: navigator.language,
+          visitorId: visitorId,
         };
 
         // Log analytics data
         console.log("Visitor ID:", visitorId);
         console.log("Visit Data:", visitorData);
+
+        // Store visit in Database
+        await createVisitorInfo(visitorData);
 
         // Store visit in localStorage
         const visits = JSON.parse(localStorage.getItem("visits") || "[]");
