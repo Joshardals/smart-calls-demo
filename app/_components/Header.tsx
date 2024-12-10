@@ -1,13 +1,70 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation"; // Hook to get the current pathname
+import { usePathname } from "next/navigation";
 import { IoIosArrowDown } from "react-icons/io";
+
+interface VisitorData {
+  timestamp: number;
+  pathname: string;
+  userAgent: string;
+  referrer: string;
+  screenResolution: string;
+  deviceType: string;
+  language: string;
+}
 
 export function Header() {
   const [showModal, setShowModal] = useState(false);
-  const pathname = usePathname(); // Get the current route
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const trackVisit = () => {
+      try {
+        // Get existing visitor ID from localStorage
+        let visitorId = localStorage.getItem("visitorId");
+
+        // If no visitor ID exists, create one
+        if (!visitorId) {
+          visitorId = crypto.randomUUID();
+          localStorage.setItem("visitorId", visitorId);
+        }
+
+        // Detect device type
+        const deviceType =
+          /Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile/.test(
+            navigator.userAgent
+          )
+            ? "mobile"
+            : "desktop";
+
+        // Prepare visitor data
+        const visitorData: VisitorData = {
+          timestamp: Date.now(),
+          pathname: pathname,
+          userAgent: navigator.userAgent,
+          referrer: document.referrer,
+          screenResolution: `${window.screen.width}x${window.screen.height}`,
+          deviceType: deviceType,
+          language: navigator.language,
+        };
+
+        // Log analytics data
+        console.log("Visitor ID:", visitorId);
+        console.log("Visit Data:", visitorData);
+
+        // Store visit in localStorage
+        const visits = JSON.parse(localStorage.getItem("visits") || "[]");
+        visits.push(visitorData);
+        localStorage.setItem("visits", JSON.stringify(visits));
+      } catch (error) {
+        console.error("Error tracking visit:", error);
+      }
+    };
+
+    trackVisit();
+  }, [pathname]);
 
   return (
     <header>

@@ -5,6 +5,8 @@ import "./globals.css";
 import { Header } from "./_components/Header";
 import { Footer } from "./_components/Footer";
 
+import { Analytics } from "@vercel/analytics/react";
+
 export const metadata: Metadata = {
   title: "Intro to Smart Contracts",
   description:
@@ -35,6 +37,7 @@ export default function RootLayout({
       <body className={`${roboto.variable} ${lora.variable} antialiased`}>
         <Header />
         <div className="min-h-screen">{children}</div>
+        <Analytics />
         <Footer />
       </body>
     </html>

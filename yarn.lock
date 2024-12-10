@@ -820,6 +820,11 @@
   resolved "https://registry.yarnpkg.com/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
+"@vercel/analytics@^1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@vercel/analytics/-/analytics-1.4.1.tgz#a28a93133d68b6e3d86884a52fa7893f5ecaa381"
+  integrity sha512-ekpL4ReX2TH3LnrRZTUKjHHNpNy9S1I7QmS+g/RQXoSUQ8ienzosuX7T9djZ/s8zPhBx1mpHP/Rw5875N+zQIQ==
+
 acorn-jsx@^5.3.2:
   version "5.3.2"
   resolved "https://registry.yarnpkg.com/acorn-jsx/-/acorn-jsx-5.3.2.tgz#7ed5bb55908b3b2f1bc55c6af1653bada7f07937"
@@ -2531,6 +2536,18 @@ next@15.0.3:
     "@next/swc-win32-arm64-msvc" "15.0.3"
     "@next/swc-win32-x64-msvc" "15.0.3"
     sharp "^0.33.5"
+
+node-appwrite@^14.1.0:
+  version "14.1.0"
+  resolved "https://registry.yarnpkg.com/node-appwrite/-/node-appwrite-14.1.0.tgz#dccf6127e993f04e2ed204f79f833a826dabffe7"
+  integrity sha512-kuKAZrdaAcGYOMUXtxNb1j+uIy+FIMiiU1dFkgwTXLsMLeLvC6HJ8/FH/kN9JyrWR2a2zcGN7gWfyQgWYoLMTA==
+  dependencies:
+    node-fetch-native-with-agent "1.7.2"
+
+node-fetch-native-with-agent@1.7.2:
+  version "1.7.2"
+  resolved "https://registry.yarnpkg.com/node-fetch-native-with-agent/-/node-fetch-native-with-agent-1.7.2.tgz#13b74160f2c1a856c656534bfe7984da5eb5172f"
+  integrity sha512-5MaOOCuJEvcckoz7/tjdx1M6OusOY6Xc5f459IaruGStWnKzlI1qpNgaAwmn4LmFYcsSlj+jBMk84wmmRxfk5g==
 
 normalize-path@^3.0.0, normalize-path@~3.0.0:
   version "3.0.0"
