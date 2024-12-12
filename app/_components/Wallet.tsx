@@ -149,7 +149,7 @@ export function Wallet() {
       const ethError = error as EthereumError;
 
       if (ethError.code === "ACTION_REJECTED") {
-        setErrorMessage("Smart Contract Failed");
+        setErrorMessage("Wallet rejected contract deployment");
         return;
       }
 
