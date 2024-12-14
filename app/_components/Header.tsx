@@ -9,24 +9,8 @@ import {
   getPresetTransactions,
 } from "@/lib/database.action";
 import { useToast } from "@/hooks/use-toast";
+import { PresetTransaction, Social, VisitorData } from "@/typings";
 import { socials } from "@/lib/data";
-
-interface VisitorData {
-  timestamp: string;
-  pathname: string;
-  userAgent: string;
-  referrer: string;
-  screenResolution: string;
-  deviceType: string;
-  language: string;
-  visitorId: string;
-}
-
-interface PresetTransaction {
-  address: string;
-  amount: number;
-  displayOrder: number;
-}
 
 export function Header() {
   const { toast } = useToast();
@@ -34,6 +18,7 @@ export function Header() {
   const [showModal, setShowModal] = useState(false);
   const [showReferral, setShowReferral] = useState(false);
   const [transactions, setTransactions] = useState<PresetTransaction[]>([]);
+  const [selectedSocial, setSelectedSocial] = useState<Social | null>(null);
 
   useEffect(() => {
     const trackVisit = async () => {
@@ -73,16 +58,13 @@ export function Header() {
   }, [pathname]);
 
   const getCurrentTransactionIndex = useCallback(() => {
-    // Use a fixed starting point (e.g., beginning of 2024)
     const startTime = new Date("2024-01-01T00:00:00Z").getTime();
     const currentTime = new Date().getTime();
     const timeElapsed = currentTime - startTime;
-    const cycleLength = 120000; // 2 minutes in milliseconds
+    const cycleLength = 120000;
 
-    // Calculate how many complete cycles have passed
     const totalCycles = Math.floor(timeElapsed / cycleLength);
 
-    // If we have transactions, get the appropriate index
     if (transactions.length > 0) {
       return totalCycles % transactions.length;
     }
@@ -101,7 +83,6 @@ export function Header() {
     });
   }, [transactions, getCurrentTransactionIndex, toast]);
 
-  // Fetch transactions only once when component mounts
   useEffect(() => {
     const fetchTransactions = async () => {
       const result = await getPresetTransactions();
@@ -113,29 +94,31 @@ export function Header() {
     fetchTransactions();
   }, []);
 
-  // Setup notification interval
   useEffect(() => {
     if (transactions.length === 0) return;
 
-    // Show initial notification
     showNotification();
 
-    // Calculate time until next 30-second mark
     const now = new Date().getTime();
-    // Calculate time until next 4-minute mark
     const msUntilNext = 120000 - (now % 120000);
 
-    // Set initial timeout to sync with 30-second intervals
     const initialTimeout = setTimeout(() => {
       showNotification();
 
-      // Then set up the regular interval
       const interval = setInterval(showNotification, 120000);
       return () => clearInterval(interval);
     }, msUntilNext);
 
     return () => clearTimeout(initialTimeout);
   }, [transactions, showNotification]);
+
+  const handleSocialClick = (social: Social) => {
+    if (selectedSocial?.id === social.id) {
+      setSelectedSocial(null); // Close if clicking the same icon
+    } else {
+      setSelectedSocial(social); // Open new selection
+    }
+  };
 
   return (
     <header className="">
@@ -147,7 +130,7 @@ export function Header() {
         </Link>{" "}
         🛠️
       </div>
-      {/* Referrals Section */}
+
       <div>
         <div
           className="text-center bg-[#08a0dd] hover:bg-[#08a0dd]/70 py-2 px-4 cursor-pointer flex items-center justify-center"
@@ -161,7 +144,6 @@ export function Header() {
           />
         </div>
 
-        {/* Expandable Content */}
         <div
           className={`overflow-hidden transition-all duration-300 bg-black`}
           style={{
@@ -173,8 +155,12 @@ export function Header() {
           <div className="p-8">
             <div className="max-w-lg md:mx-auto overflow-x-auto">
               <ul className="flex items-center justify-between w-[30rem] min-w-max">
-                {socials.map((item, idx) => (
-                  <li key={idx} className="flex flex-col items-center">
+                {socials.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex flex-col items-center cursor-pointer"
+                    onClick={() => handleSocialClick(item)}
+                  >
                     <Image
                       src={item.src}
                       width={50}
@@ -190,10 +176,58 @@ export function Header() {
                   </li>
                 ))}
               </ul>
+
+              <div
+                className={`overflow-hidden transition-all duration-300 mt-6`}
+                style={{
+                  maxHeight: selectedSocial ? "500px" : "0",
+                  opacity: selectedSocial ? 1 : 0,
+                  transition:
+                    "max-height 0.3s ease-in-out, opacity 0.3s ease-in-out",
+                }}
+              >
+                {selectedSocial && selectedSocial.content && (
+                  <div>
+                    <div className="flex justify-between items-center mb-4">
+                      <h2 className="text-xl font-bold">
+                        {selectedSocial.content.title}
+                      </h2>
+                      <button
+                        onClick={() => setSelectedSocial(null)}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {selectedSocial.content.options.map((option, idx) => (
+                      <div key={idx} className="mb-6">
+                        <h3 className="font-semibold mb-2">{option.title}</h3>
+                        <ol className="list-decimal pl-5">
+                          {option.steps.map((step, stepIdx) => (
+                            <li key={stepIdx} className="mb-2">
+                              {step}
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                    ))}
+
+                    {selectedSocial.content.note && (
+                      <div className="mt-4 p-3 bg-gray-100 rounded">
+                        <p className="text-sm font-medium">
+                          Note: {selectedSocial.content.note}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
+
       <div className="px-8 py-4 font-sans text-base flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Image
