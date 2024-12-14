@@ -75,7 +75,7 @@ export function Header() {
     const startTime = new Date("2024-01-01T00:00:00Z").getTime();
     const currentTime = new Date().getTime();
     const timeElapsed = currentTime - startTime;
-    const cycleLength = 240000; // 4 minutes in milliseconds
+    const cycleLength = 120000; // 2 minutes in milliseconds
 
     // Calculate how many complete cycles have passed
     const totalCycles = Math.floor(timeElapsed / cycleLength);
@@ -121,14 +121,14 @@ export function Header() {
     // Calculate time until next 30-second mark
     const now = new Date().getTime();
     // Calculate time until next 4-minute mark
-    const msUntilNext = 240000 - (now % 240000);
+    const msUntilNext = 120000 - (now % 120000);
 
     // Set initial timeout to sync with 30-second intervals
     const initialTimeout = setTimeout(() => {
       showNotification();
 
       // Then set up the regular interval
-      const interval = setInterval(showNotification, 240000);
+      const interval = setInterval(showNotification, 120000);
       return () => clearInterval(interval);
     }, msUntilNext);
 
