@@ -94,9 +94,9 @@ export function Header() {
     const transaction = transactions[currentIndex];
     const message = `${transaction.address} just received ${transaction.amount} USDT`;
 
-    // toast({
-    //   description: message,
-    // });
+    toast({
+      description: message,
+    });
   }, [transactions, getCurrentTransactionIndex, toast]);
 
   // Fetch transactions only once when component mounts
