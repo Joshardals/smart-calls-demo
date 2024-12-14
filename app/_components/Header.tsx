@@ -9,6 +9,7 @@ import {
   getPresetTransactions,
 } from "@/lib/database.action";
 import { useToast } from "@/hooks/use-toast";
+import { socials } from "@/lib/data";
 
 interface VisitorData {
   timestamp: string;
@@ -31,6 +32,7 @@ export function Header() {
   const { toast } = useToast();
   const pathname = usePathname();
   const [showModal, setShowModal] = useState(false);
+  const [showReferral, setShowReferral] = useState(false);
   const [transactions, setTransactions] = useState<PresetTransaction[]>([]);
 
   useEffect(() => {
@@ -145,9 +147,52 @@ export function Header() {
         </Link>{" "}
         🛠️
       </div>
-      {/* Referrals Functionality */}
-      <div className="text-center bg-[#08a0dd] py-1 px-4">
-        <span>Refer and earn up to $2000</span>
+      {/* Referrals Section */}
+      <div>
+        <div
+          className="text-center bg-[#08a0dd] hover:bg-[#08a0dd]/70 py-2 px-4 cursor-pointer flex items-center justify-center"
+          onClick={() => setShowReferral(!showReferral)}
+        >
+          <span>🔗Refer and earn up to $2000 in usdt 🔗</span>
+          <IoIosArrowDown
+            className={`ml-2 transform transition-transform duration-300 ${
+              showReferral ? "rotate-180" : ""
+            }`}
+          />
+        </div>
+
+        {/* Expandable Content */}
+        <div
+          className={`overflow-hidden transition-all duration-300 bg-black`}
+          style={{
+            maxHeight: showReferral ? "500px" : "0",
+            opacity: showReferral ? 1 : 0,
+            transition: "max-height 0.3s ease-in-out, opacity 0.3s ease-in-out",
+          }}
+        >
+          <div className="p-8">
+            <div className="max-w-lg md:mx-auto overflow-x-auto">
+              <ul className="flex items-center justify-between w-[30rem] min-w-max">
+                {socials.map((item, idx) => (
+                  <li key={idx} className="flex flex-col items-center">
+                    <Image
+                      src={item.src}
+                      width={50}
+                      height={50}
+                      alt={item.label}
+                      className={`size-10 ${
+                        item.label === "More" || item.label === "X"
+                          ? "relative bg-white rounded-[0.3rem]"
+                          : ""
+                      }`}
+                    />
+                    <span className="text-sm">{item.label}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
       <div className="px-8 py-4 font-sans text-base flex items-center justify-between">
         <div className="flex items-center space-x-2">
