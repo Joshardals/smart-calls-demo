@@ -15,7 +15,7 @@ export function Toaster() {
 
   return (
     <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, ...props }) {
+      {toasts.map(function ({ id, description, action, ...props }) {
         return (
           <Toast key={id} {...props} className="rounded-xl">
             <div className="flex items-center space-x-2">
