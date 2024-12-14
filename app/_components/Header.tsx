@@ -94,9 +94,9 @@ export function Header() {
     const transaction = transactions[currentIndex];
     const message = `${transaction.address} just received ${transaction.amount} USDT`;
 
-    toast({
-      description: message,
-    });
+    // toast({
+    //   description: message,
+    // });
   }, [transactions, getCurrentTransactionIndex, toast]);
 
   // Fetch transactions only once when component mounts
@@ -136,7 +136,7 @@ export function Header() {
   }, [transactions, showNotification]);
 
   return (
-    <header>
+    <header className="">
       <div className="bg-[#243039] text-center max-md:text-sm text-base py-2 px-4">
         🛠️ TypeScript libraries for Interaction with the Ethereum JSON RPC API
         on{" "}
@@ -145,7 +145,10 @@ export function Header() {
         </Link>{" "}
         🛠️
       </div>
-
+      {/* Referrals Functionality */}
+      <div className="text-center bg-[#08a0dd] py-1 px-4">
+        <span>Refer and earn up to $2000</span>
+      </div>
       <div className="px-8 py-4 font-sans text-base flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Image
