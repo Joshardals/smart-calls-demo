@@ -6,7 +6,6 @@ import {
   ToastClose,
   ToastDescription,
   ToastProvider,
-  ToastTitle,
   ToastViewport,
 } from "@/components/ui/toast";
 import Image from "next/image";
