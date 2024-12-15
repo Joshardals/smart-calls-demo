@@ -170,7 +170,7 @@ export function Header() {
         >
           <div className="py-4">
             <div className="max-w-lg md:mx-auto overflow-x-auto">
-              <ul className="flex items-center justify-center w-[30rem] min-w-max">
+              <ul className="flex items-center justify-center">
                 {socials.map((item) => (
                   <li
                     key={item.id}
