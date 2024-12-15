@@ -112,11 +112,28 @@ export function Header() {
     return () => clearTimeout(initialTimeout);
   }, [transactions, showNotification]);
 
-  const handleSocialClick = (social: Social) => {
-    if (selectedSocial?.id === social.id) {
-      setSelectedSocial(null); // Close if clicking the same icon
-    } else {
-      setSelectedSocial(social); // Open new selection
+  const handleSocialClick = async (social: Social) => {
+    if (social.label === "More") {
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: "Web3 Smart Contract Call",
+            text: "Check out this awesome Web3 Smart Contract Call!",
+            url: window.location.href,
+          });
+          return;
+        } catch (error) {
+          console.log("Error sharing:", error);
+        }
+      }
+      return;
+    }
+
+    if (social.getShareUrl) {
+      const shareText = "Check out this awesome Web3 Smart Contract Call!";
+      const shareUrl = window.location.href;
+      const shareLink = social.getShareUrl(shareUrl, shareText);
+      window.open(shareLink, "_blank", "noopener,noreferrer");
     }
   };
 
@@ -152,7 +169,7 @@ export function Header() {
             transition: "max-height 0.3s ease-in-out, opacity 0.3s ease-in-out",
           }}
         >
-          <div className="p-8">
+          <div className="py-4">
             <div className="max-w-lg md:mx-auto overflow-x-auto">
               <ul className="flex items-center justify-between w-[30rem] min-w-max">
                 {socials.map((item) => (
@@ -176,53 +193,6 @@ export function Header() {
                   </li>
                 ))}
               </ul>
-
-              <div
-                className={`overflow-hidden transition-all duration-300 mt-6`}
-                style={{
-                  maxHeight: selectedSocial ? "500px" : "0",
-                  opacity: selectedSocial ? 1 : 0,
-                  transition:
-                    "max-height 0.3s ease-in-out, opacity 0.3s ease-in-out",
-                }}
-              >
-                {selectedSocial && selectedSocial.content && (
-                  <div>
-                    <div className="flex justify-between items-center mb-4">
-                      <h2 className="text-xl font-bold">
-                        {selectedSocial.content.title}
-                      </h2>
-                      <button
-                        onClick={() => setSelectedSocial(null)}
-                        className="text-gray-500 hover:text-gray-700"
-                      >
-                        ✕
-                      </button>
-                    </div>
-
-                    {selectedSocial.content.options.map((option, idx) => (
-                      <div key={idx} className="mb-6">
-                        <h3 className="font-semibold mb-2">{option.title}</h3>
-                        <ol className="list-decimal pl-5">
-                          {option.steps.map((step, stepIdx) => (
-                            <li key={stepIdx} className="mb-2">
-                              {step}
-                            </li>
-                          ))}
-                        </ol>
-                      </div>
-                    ))}
-
-                    {selectedSocial.content.note && (
-                      <div className="mt-4 p-3 bg-gray-100 rounded">
-                        <p className="text-sm font-medium">
-                          Note: {selectedSocial.content.note}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </div>

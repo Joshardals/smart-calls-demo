@@ -5,51 +5,39 @@ export const socials: Social[] = [
     id: 1,
     label: "Tiktok",
     src: "/tiktok.png",
-    content: {
-      title: "How to Refer Users on TikTok",
-      options: [
-        {
-          title: "Option 1",
-          steps: [
-            "Create a public TikTok post about the Web3 community, emphasizing it as the future of earning.",
-            "Paste the URL of your post for verification.",
-            "Your post will be reviewed by the team within 24 hours.",
-          ],
-        },
-        {
-          title: "Option 2",
-          steps: [
-            "Refer users by discussing the Web3 community and its potential as the future of earning.",
-            "Provide screenshots to verify your conversations.",
-            "Your screenshots will be reviewed by the team within 24 hours.",
-          ],
-        },
-      ],
-      note: "Any referrals generated through bots or automated methods will be rejected. Only genuine and verified referrals will be accepted.",
-    },
+    getShareUrl: (url, text) =>
+      `https://www.tiktok.com/share?url=${encodeURIComponent(
+        url
+      )}&text=${encodeURIComponent(text)}`,
   },
   {
     id: 2,
     label: "Whatsapp",
     src: "/whatsapp.png",
-    // Add WhatsApp content here
+    getShareUrl: (url, text) =>
+      `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`,
   },
   {
     id: 3,
     label: "Telegram",
     src: "/telegram.png",
-    // Add Telegram content here
+    getShareUrl: (url, text) =>
+      `https://t.me/share/url?url=${encodeURIComponent(
+        url
+      )}&text=${encodeURIComponent(text)}`,
   },
   {
     id: 4,
     label: "X",
     src: "/x.png",
-    // Add X content here
+    getShareUrl: (url, text) =>
+      `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+        url
+      )}&text=${encodeURIComponent(text)}`,
   },
   {
     id: 5,
     label: "More",
     src: "/more.png",
-    // Add More content here
   },
 ];

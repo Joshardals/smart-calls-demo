@@ -12,6 +12,7 @@ export interface Social {
   label: string;
   src: string;
   content?: SocialContent;
+  getShareUrl?: (url: string, text: string) => string;
 }
 
 export interface VisitorData {
