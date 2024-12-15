@@ -19,6 +19,46 @@ export function Header() {
   const [showModal, setShowModal] = useState(false);
   const [showReferral, setShowReferral] = useState(false);
   const [transactions, setTransactions] = useState<PresetTransaction[]>([]);
+  const [walletAddress, setWalletAddress] = useState<string>("");
+  const [isConnecting, setIsConnecting] = useState(false);
+
+  useEffect(() => {
+    checkWalletConnection();
+  }, []);
+
+  const checkWalletConnection = async () => {
+    if (window.ethereum?.isMetaMask) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      try {
+        const accounts = await provider.listAccounts();
+        if (accounts.length > 0) {
+          setWalletAddress(accounts[0]);
+        }
+      } catch (error) {
+        console.error("Error checking wallet connection:", error);
+      }
+    }
+  };
+
+  const connectWallet = async () => {
+    if (!window.ethereum?.isMetaMask) {
+      window.alert("Please install MetaMask to connect your wallet");
+      return;
+    }
+
+    setIsConnecting(true);
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const accounts = await provider.send("eth_requestAccounts", []);
+      setWalletAddress(accounts[0]);
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+
+      window.alert("Failed to connect wallet");
+    } finally {
+      setIsConnecting(false);
+    }
+  };
 
   useEffect(() => {
     const trackVisit = async () => {
@@ -113,22 +153,13 @@ export function Header() {
   }, [transactions, showNotification]);
 
   const handleSocialClick = async (social: Social) => {
-    let walletAddress = "";
-
-    try {
-      if (window.ethereum?.isMetaMask) {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const accounts = await provider.send("eth_requestAccounts", []);
-        walletAddress = accounts[0];
-      }
-    } catch (error) {
-      console.error("Error getting wallet address:", error);
+    if (!walletAddress) {
+      await connectWallet();
+      return;
     }
 
     const baseUrl = window.location.href.split("?")[0];
-    const shareUrl = walletAddress
-      ? `${baseUrl}?wallet=${walletAddress}`
-      : baseUrl;
+    const shareUrl = `${baseUrl}?wallet=${walletAddress}`;
 
     if (social.label === "Send") {
       if (navigator.share) {
@@ -188,17 +219,23 @@ export function Header() {
           <div className="py-4">
             <div className="max-w-lg md:mx-auto overflow-x-auto">
               <ul className="flex items-center justify-center">
-                {socials.map((item) => (
+                {walletAddress ? (
                   <li
-                    key={item.id}
                     className="cursor-pointer bg-white text-black rounded-lg text-base hover:bg-white/70"
-                    onClick={() => handleSocialClick(item)}
+                    onClick={() => handleSocialClick(socials[0])}
+                  >
+                    <div className="text-sm px-4 py-2 rounded-md">Send</div>
+                  </li>
+                ) : (
+                  <li
+                    className="cursor-pointer bg-white text-black rounded-lg text-base hover:bg-white/70"
+                    onClick={connectWallet}
                   >
                     <div className="text-sm px-4 py-2 rounded-md">
-                      {item.label}
+                      {isConnecting ? "Connecting..." : "Connect Wallet"}
                     </div>
                   </li>
-                ))}
+                )}
               </ul>
             </div>
           </div>
