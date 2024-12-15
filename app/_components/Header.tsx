@@ -112,7 +112,7 @@ export function Header() {
   }, [transactions, showNotification]);
 
   const handleSocialClick = async (social: Social) => {
-    if (social.label === "More") {
+    if (social.label === "Send") {
       if (navigator.share) {
         try {
           await navigator.share({
