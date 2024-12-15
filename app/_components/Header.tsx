@@ -18,7 +18,6 @@ export function Header() {
   const [showModal, setShowModal] = useState(false);
   const [showReferral, setShowReferral] = useState(false);
   const [transactions, setTransactions] = useState<PresetTransaction[]>([]);
-  const [selectedSocial, setSelectedSocial] = useState<Social | null>(null);
 
   useEffect(() => {
     const trackVisit = async () => {
