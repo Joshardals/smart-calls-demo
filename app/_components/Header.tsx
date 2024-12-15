@@ -238,7 +238,7 @@ export function Header() {
           }}
         >
           <div className="py-4 px-8">
-            <div className="max-w-lg md:mx-auto overflow-x-auto space-y-4">
+            <div className="md:max-w-md md:mx-auto overflow-x-auto space-y-4">
               <ul className="flex items-center justify-between space-x-4 text-base max-md:text-sm">
                 {walletAddress ? (
                   <>
@@ -258,7 +258,7 @@ export function Header() {
                       https://web3smartcalls.com?wallet={walletAddress}
                     </li>
                     <li
-                      className="cursor-pointer bg-white text-black rounded-lg text-base hover:bg-white/70"
+                      className="cursor-pointer border hover:text-black border-white  rounded-lg text-base hover:bg-white"
                       onClick={() => handleSocialClick(socials[0])}
                     >
                       <div className="max-md:text-sm text-base px-4 py-2 rounded-md">
@@ -277,6 +277,30 @@ export function Header() {
                   </li>
                 )}
               </ul>
+
+              {/* Email Input */}
+              <form className="space-y-2">
+                <div>
+                  <input
+                    type="email"
+                    title="email"
+                    className="w-full py-2 px-4 bg-black rounded-lg outline-none border border-white/20 focus:border-white"
+                    placeholder="Email Address"
+                  />
+                  <button
+                    type="submit"
+                    className="mt-2 w-full py-2 px-4 rounded-lg cursor-pointer bg-white text-black hover:bg-white/90 max-md:text-sm text-base"
+                  >
+                    Add Email
+                  </button>
+                </div>
+                <p className="text-sm text-red-500">
+                  ⓘ Provide a valid email address to receive referral
+                  notifications. <br />ⓘ Referrals won&apos;t be credited
+                  without an email address.
+                </p>
+              </form>
+
               {walletAddress && (
                 <div className="bg-[#090C17] border border-white/20 rounded-xl py-2 px-4 break-words">
                   <p className="max-md:text-sm text-base">
@@ -294,10 +318,27 @@ export function Header() {
                     >
                       https://web3smartcalls.com?wallet={walletAddress}
                     </Link>
-                    .
                     <br />
                     You&apos;re going to be so glad you jumped in!
                   </p>
+
+                  <div className="flex justify-end">
+                    <div
+                      className="py-2 px-4 border border-white rounded-lg cursor-pointer hover:bg-white hover:text-black max-md:text-sm text-base"
+                      onClick={() => {
+                        const fullMessage = `Hey,\n\nYou've got to check this out! I've been diving into the Web3 community and already made a few hundred dollars—it's legit. If you join through my link, we both earn, and trust me, you don't want to miss out on this.\n\nHere's the link: https://web3smartcalls.com?wallet=${walletAddress}\n\nYou're going to be so glad you jumped in!`;
+
+                        navigator.clipboard
+                          .writeText(fullMessage)
+                          .then(() => alert("Message copied."))
+                          .catch((err) =>
+                            console.error("Failed to copy:", err)
+                          );
+                      }}
+                    >
+                      Copy
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
