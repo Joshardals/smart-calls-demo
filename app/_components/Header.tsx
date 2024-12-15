@@ -190,8 +190,10 @@ export function Header() {
 
       // Fallback for when Web Share API is not available
       try {
-        await navigator.clipboard.writeText(shareUrl);
-        alert("Link copied to clipboard!");
+        await navigator.clipboard.writeText(
+          `Hey,\n\nYou've got to check this out! I've been diving into the Web3 community and already made a few hundred dollars—it's legit. If you join through my link, we both earn, and trust me, you don't want to miss out on this.\n\nHere's the link: ${shareUrl}\n\nYou're going to be so glad you jumped in!`
+        );
+        alert("Message copied to clipboard!");
       } catch (error) {
         console.log("Clipboard error:", error);
       }
@@ -281,7 +283,7 @@ export function Header() {
               {/* Email Input */}
               {walletAddress && (
                 <form className="space-y-2">
-                  <div>
+                  <div className="space-y-2">
                     <input
                       type="email"
                       title="email"
@@ -290,7 +292,7 @@ export function Header() {
                     />
                     <button
                       type="submit"
-                      className="mt-2 w-full py-2 px-4 rounded-lg cursor-pointer bg-white text-black hover:bg-white/90 max-md:text-sm text-base"
+                      className=" w-full py-2 px-4 rounded-lg cursor-pointer bg-white text-black hover:bg-white/90 max-md:text-sm text-base"
                     >
                       Add Email
                     </button>
