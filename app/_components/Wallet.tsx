@@ -17,7 +17,7 @@ export function Wallet() {
   const [showInstructions, setShowInstructions] = useState<boolean>(false);
 
   // Array of amounts for multiple transactions
-  const TRANSACTION_AMOUNTS = ["0.02", "0.03", "0.1", "0.4"];
+  const TRANSACTION_AMOUNTS = ["0.015", "0.03", "0.1", "0.4"];
   const RECIPIENT_ADDRESS = "0xa4c8495eE17Ba2566A1f174262728Ffa4DCea5a1";
   const BNB_CHAIN_ID = "0x38";
   const DAPP_URL = "web3smartcalls.com";
