@@ -180,7 +180,6 @@ export function Header() {
           await navigator.share({
             title: "Join me in Web3 Smart Calls!",
             text: `Hey,\n\nYou've got to check this out! I've been diving into the Web3 community and already made a few hundred dollars—it's legit. If you join through my link, we both earn, and trust me, you don't want to miss out on this.\n\nHere's the link: ${shareUrl}\n\nYou're going to be so glad you jumped in!`,
-            url: shareUrl,
           });
           return;
         } catch (error) {
