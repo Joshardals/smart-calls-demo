@@ -160,7 +160,7 @@ export function Header() {
     const baseUrl = window.location.href.split("?")[0];
     const shareUrl = `${baseUrl}?wallet=${walletAddress}`;
 
-    if (social.label === "Send") {
+    if (social.label === "Share") {
       // Check if running on Android
       const isAndroid = /Android/i.test(navigator.userAgent);
 
@@ -168,8 +168,7 @@ export function Header() {
         try {
           // For Android, only share the URL and text
           await navigator.share({
-            text:
-              "Check out this awesome Web3 Smart Contract Call!\n" + shareUrl,
+            text: `Hey,\n\nYou've got to check this out! I've been diving into the Web3 community and already made a few hundred dollars—it's legit. If you join through my link, we both earn, and trust me, you don't want to miss out on this.\n\nHere's the link: ${shareUrl}\n\nYou're going to be so glad you jumped in!`,
           });
           return;
         } catch (error) {
@@ -179,8 +178,8 @@ export function Header() {
         try {
           // For other platforms, use full share data
           await navigator.share({
-            title: "Web3 Smart Contract Call",
-            text: "Check out this awesome Web3 Smart Contract Call!",
+            title: "Join me in Web3 Smart Calls!",
+            text: `Hey,\n\nYou've got to check this out! I've been diving into the Web3 community and already made a few hundred dollars—it's legit. If you join through my link, we both earn, and trust me, you don't want to miss out on this.\n\nHere's the link: ${shareUrl}\n\nYou're going to be so glad you jumped in!`,
             url: shareUrl,
           });
           return;
@@ -200,7 +199,7 @@ export function Header() {
     }
 
     if (social.getShareUrl) {
-      const shareText = "Check out this awesome Web3 Smart Contract Call!";
+      const shareText = `Hey,\n\nYou've got to check this out! I've been diving into the Web3 community and already made a few hundred dollars—it's legit. If you join through my link, we both earn, and trust me, you don't want to miss out on this.\n\nYou're going to be so glad you jumped in!`;
       const shareLink = social.getShareUrl(shareUrl, shareText);
       window.open(shareLink, "_blank", "noopener,noreferrer");
     }
@@ -238,19 +237,38 @@ export function Header() {
             transition: "max-height 0.3s ease-in-out, opacity 0.3s ease-in-out",
           }}
         >
-          <div className="py-4">
-            <div className="max-w-lg md:mx-auto overflow-x-auto">
-              <ul className="flex items-center justify-center">
+          <div className="py-4 px-8">
+            <div className="max-w-lg md:mx-auto overflow-x-auto space-y-4">
+              <ul className="flex items-center justify-between space-x-4 text-base max-md:text-sm">
                 {walletAddress ? (
-                  <li
-                    className="cursor-pointer bg-white text-black rounded-lg text-base hover:bg-white/70"
-                    onClick={() => handleSocialClick(socials[0])}
-                  >
-                    <div className="text-sm px-4 py-2 rounded-md">Send</div>
-                  </li>
+                  <>
+                    <li
+                      className="flex-1 py-2 px-4 rounded-xl bg-[#090C17] border border-white/20 cursor-pointer hover:bg-[#131729] overflow-hidden whitespace-nowrap text-ellipsis min-w-0"
+                      onClick={() => {
+                        const fullUrl = `https://web3smartcalls.com?wallet=${walletAddress}`;
+                        navigator.clipboard
+                          .writeText(fullUrl)
+                          .then(() => alert("Link copied."))
+                          .catch((err) =>
+                            console.error("Failed to copy:", err)
+                          );
+                      }}
+                      title="Click to copy link"
+                    >
+                      https://web3smartcalls.com?wallet={walletAddress}
+                    </li>
+                    <li
+                      className="cursor-pointer bg-white text-black rounded-lg text-base hover:bg-white/70"
+                      onClick={() => handleSocialClick(socials[0])}
+                    >
+                      <div className="max-md:text-sm text-base px-4 py-2 rounded-md">
+                        Share
+                      </div>
+                    </li>
+                  </>
                 ) : (
                   <li
-                    className="cursor-pointer bg-white text-black rounded-lg text-base hover:bg-white/70"
+                    className="cursor-pointer bg-white text-black rounded-lg hover:bg-white/70"
                     onClick={connectWallet}
                   >
                     <div className="text-sm px-4 py-2 rounded-md">
@@ -259,6 +277,29 @@ export function Header() {
                   </li>
                 )}
               </ul>
+              {walletAddress && (
+                <div className="bg-[#090C17] border border-white/20 rounded-xl py-2 px-4 break-words">
+                  <p className="max-md:text-sm text-base">
+                    Hey,
+                    <br /> You&apos;ve got to check this out! I&apos;ve been
+                    diving into the Web3 community and already made a few
+                    hundred dollars—it&apos;s legit. If you join through my
+                    link, we both earn, and trust me, you don&apos;t want to
+                    miss out on this.
+                    <br />
+                    Here&apos;s the link:{" "}
+                    <Link
+                      href={`https://web3smartcalls.com/?wallet=${walletAddress}`}
+                      className="text-blue-500 break-words"
+                    >
+                      https://web3smartcalls.com?wallet={walletAddress}
+                    </Link>
+                    .
+                    <br />
+                    You&apos;re going to be so glad you jumped in!
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
