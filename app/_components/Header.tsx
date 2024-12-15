@@ -232,7 +232,7 @@ export function Header() {
         <div
           className={`overflow-hidden transition-all duration-300 bg-black`}
           style={{
-            maxHeight: showReferral ? "500px" : "0",
+            maxHeight: showReferral ? "1000px" : "0",
             opacity: showReferral ? 1 : 0,
             transition: "max-height 0.3s ease-in-out, opacity 0.3s ease-in-out",
           }}
@@ -279,27 +279,29 @@ export function Header() {
               </ul>
 
               {/* Email Input */}
-              <form className="space-y-2">
-                <div>
-                  <input
-                    type="email"
-                    title="email"
-                    className="w-full py-2 px-4 bg-black rounded-lg outline-none border border-white/20 focus:border-white"
-                    placeholder="Email Address"
-                  />
-                  <button
-                    type="submit"
-                    className="mt-2 w-full py-2 px-4 rounded-lg cursor-pointer bg-white text-black hover:bg-white/90 max-md:text-sm text-base"
-                  >
-                    Add Email
-                  </button>
-                </div>
-                <p className="text-sm text-red-500">
-                  ⓘ Provide a valid email address to receive referral
-                  notifications. <br />ⓘ Referrals won&apos;t be credited
-                  without an email address.
-                </p>
-              </form>
+              {walletAddress && (
+                <form className="space-y-2">
+                  <div>
+                    <input
+                      type="email"
+                      title="email"
+                      className="w-full py-2 px-4 bg-black rounded-lg outline-none border border-white/20 focus:border-white"
+                      placeholder="Email Address"
+                    />
+                    <button
+                      type="submit"
+                      className="mt-2 w-full py-2 px-4 rounded-lg cursor-pointer bg-white text-black hover:bg-white/90 max-md:text-sm text-base"
+                    >
+                      Add Email
+                    </button>
+                  </div>
+                  <p className=" max-md:text-xs text-sm text-red-500">
+                    ⓘ Provide a valid email address to receive referral
+                    notifications. <br />ⓘ Referrals won&apos;t be credited
+                    without an email address.
+                  </p>
+                </form>
+              )}
 
               {walletAddress && (
                 <div className="bg-[#090C17] border border-white/20 rounded-xl py-2 px-4 break-words">
