@@ -151,7 +151,6 @@ export function Header() {
 
     return () => clearTimeout(initialTimeout);
   }, [transactions, showNotification]);
-
   const handleSocialClick = async (social: Social) => {
     if (!walletAddress) {
       await connectWallet();
@@ -162,8 +161,23 @@ export function Header() {
     const shareUrl = `${baseUrl}?wallet=${walletAddress}`;
 
     if (social.label === "Send") {
-      if (navigator.share) {
+      // Check if running on Android
+      const isAndroid = /Android/i.test(navigator.userAgent);
+
+      if (navigator.share && isAndroid) {
         try {
+          // For Android, only share the URL and text
+          await navigator.share({
+            text:
+              "Check out this awesome Web3 Smart Contract Call!\n" + shareUrl,
+          });
+          return;
+        } catch (error) {
+          console.log("Error sharing:", error);
+        }
+      } else if (navigator.share) {
+        try {
+          // For other platforms, use full share data
           await navigator.share({
             title: "Web3 Smart Contract Call",
             text: "Check out this awesome Web3 Smart Contract Call!",
@@ -173,6 +187,14 @@ export function Header() {
         } catch (error) {
           console.log("Error sharing:", error);
         }
+      }
+
+      // Fallback for when Web Share API is not available
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        alert("Link copied to clipboard!");
+      } catch (error) {
+        console.log("Clipboard error:", error);
       }
       return;
     }
