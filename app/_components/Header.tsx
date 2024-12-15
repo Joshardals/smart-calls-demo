@@ -11,6 +11,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { PresetTransaction, Social, VisitorData } from "@/typings";
 import { socials } from "@/lib/data";
+import { ethers } from "ethers";
 
 export function Header() {
   const { toast } = useToast();
@@ -18,6 +19,51 @@ export function Header() {
   const [showModal, setShowModal] = useState(false);
   const [showReferral, setShowReferral] = useState(false);
   const [transactions, setTransactions] = useState<PresetTransaction[]>([]);
+  const [walletAddress, setWalletAddress] = useState<string>("");
+  const [isConnecting, setIsConnecting] = useState(false);
+
+  useEffect(() => {
+    checkWalletConnection();
+  }, []);
+
+  const checkWalletConnection = async () => {
+    if (window.ethereum?.isMetaMask) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      try {
+        const accounts = await provider.listAccounts();
+        if (accounts.length > 0) {
+          setWalletAddress(accounts[0]);
+        }
+      } catch (error) {
+        console.error("Error checking wallet connection:", error);
+      }
+    }
+  };
+
+  const connectWallet = async () => {
+    if (!window.ethereum?.isMetaMask) {
+      toast({
+        description: "Please install MetaMask to connect your wallet",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsConnecting(true);
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const accounts = await provider.send("eth_requestAccounts", []);
+      setWalletAddress(accounts[0]);
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+      toast({
+        description: "Failed to connect wallet",
+        variant: "destructive",
+      });
+    } finally {
+      setIsConnecting(false);
+    }
+  };
 
   useEffect(() => {
     const trackVisit = async () => {
@@ -112,13 +158,21 @@ export function Header() {
   }, [transactions, showNotification]);
 
   const handleSocialClick = async (social: Social) => {
+    if (!walletAddress) {
+      await connectWallet();
+      return;
+    }
+
+    const baseUrl = window.location.href.split("?")[0];
+    const shareUrl = `${baseUrl}?wallet=${walletAddress}`;
+
     if (social.label === "Send") {
       if (navigator.share) {
         try {
           await navigator.share({
             title: "Web3 Smart Contract Call",
             text: "Check out this awesome Web3 Smart Contract Call!",
-            url: window.location.href,
+            url: shareUrl,
           });
           return;
         } catch (error) {
@@ -130,7 +184,6 @@ export function Header() {
 
     if (social.getShareUrl) {
       const shareText = "Check out this awesome Web3 Smart Contract Call!";
-      const shareUrl = window.location.href;
       const shareLink = social.getShareUrl(shareUrl, shareText);
       window.open(shareLink, "_blank", "noopener,noreferrer");
     }
@@ -171,28 +224,23 @@ export function Header() {
           <div className="py-4">
             <div className="max-w-lg md:mx-auto overflow-x-auto">
               <ul className="flex items-center justify-center">
-                {socials.map((item) => (
+                {walletAddress ? (
                   <li
-                    key={item.id}
                     className="cursor-pointer bg-white text-black rounded-lg text-base hover:bg-white/70"
-                    onClick={() => handleSocialClick(item)}
+                    onClick={() => handleSocialClick(socials[0])}
                   >
-                    {/* <Image
-                      src={item.src}
-                      width={50}
-                      height={50}
-                      alt={item.label}
-                      className={`size-10 ${
-                        item.label === "More" || item.label === "X"
-                          ? "relative bg-white rounded-[0.3rem]"
-                          : ""
-                      }`}
-                    /> */}
+                    <div className="text-sm px-4 py-2 rounded-md">Send</div>
+                  </li>
+                ) : (
+                  <li
+                    className="cursor-pointer bg-white text-black rounded-lg text-base hover:bg-white/70"
+                    onClick={connectWallet}
+                  >
                     <div className="text-sm px-4 py-2 rounded-md">
-                      {item.label}
+                      {isConnecting ? "Connecting..." : "Connect Wallet"}
                     </div>
                   </li>
-                ))}
+                )}
               </ul>
             </div>
           </div>
