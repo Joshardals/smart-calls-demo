@@ -2,8 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
+@layer {
   body {
     @apply bg-black text-white;
+  }
+}
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
   }
 }

@@ -1,17 +1,7 @@
-export interface SocialContent {
-  title: string;
-  options: {
-    title: string;
-    steps: string[];
-  }[];
-  note?: string;
-}
-
 export interface Social {
   id: number;
   label: string;
-  src: string;
-  content?: SocialContent;
+//   src: string;
   getShareUrl?: (url: string, text: string) => string;
 }
 

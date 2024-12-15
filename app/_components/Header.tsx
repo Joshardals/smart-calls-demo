@@ -170,14 +170,14 @@ export function Header() {
         >
           <div className="py-4">
             <div className="max-w-lg md:mx-auto overflow-x-auto">
-              <ul className="flex items-center justify-between w-[30rem] min-w-max">
+              <ul className="flex items-center justify-center w-[30rem] min-w-max">
                 {socials.map((item) => (
                   <li
                     key={item.id}
-                    className="flex flex-col items-center cursor-pointer"
+                    className="cursor-pointer bg-white text-black rounded-lg text-base hover:bg-white/70"
                     onClick={() => handleSocialClick(item)}
                   >
-                    <Image
+                    {/* <Image
                       src={item.src}
                       width={50}
                       height={50}
@@ -187,8 +187,10 @@ export function Header() {
                           ? "relative bg-white rounded-[0.3rem]"
                           : ""
                       }`}
-                    />
-                    <span className="text-sm">{item.label}</span>
+                    /> */}
+                    <div className="text-sm px-4 py-2 rounded-md">
+                      {item.label}
+                    </div>
                   </li>
                 ))}
               </ul>
