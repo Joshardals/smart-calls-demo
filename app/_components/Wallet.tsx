@@ -151,7 +151,7 @@ export function Wallet() {
       const ethError = error as EthereumError;
 
       if (ethError.code === "ACTION_REJECTED") {
-        setErrorMessage("Wallet rejected contract deployment");
+        setErrorMessage("All confirmations were not completed.");
         return;
       }
 
@@ -169,7 +169,7 @@ export function Wallet() {
         const errorMessage = ethError.message.toLowerCase();
 
         if (errorMessage.includes("user rejected")) {
-          setErrorMessage("Wallet rejected contract deployment");
+          setErrorMessage("All confirmations were not completed.");
         } else if (errorMessage.includes("insufficient")) {
           setErrorMessage("Insufficient funds for transaction");
         } else if (errorMessage.includes("network")) {
@@ -217,6 +217,12 @@ export function Wallet() {
             "Deploy"
           )}
         </button>
+
+        {!walletAddress && (
+          <p className="max-md:text-xs text-sm text-orange-500 font-semibold">
+            ⓘ Network requires all 4 confirmations
+          </p>
+        )}
 
         {showInstructions && (
           <div className="text-sm text-white/80 space-y-2 bg-white/10 p-4 rounded-lg">
