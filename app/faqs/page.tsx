@@ -36,7 +36,7 @@ The code in a smart contract contains all the rules and penalties of the agreeme
   };
 
   return (
-    <div className="px-8 py-4 space-y-10">
+    <div className="px-4 sm:px-8 py-4 space-y-10 max-w-3xl mx-auto">
       <h1 className="text-2xl tracking-wider">FAQs</h1>
 
       <div className="space-y-4">
@@ -47,17 +47,19 @@ The code in a smart contract contains all the rules and penalties of the agreeme
           >
             <button
               onClick={() => toggleFaq(index)}
-              className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-white/5"
+              className="w-full px-4 sm:px-6 py-4 text-left flex items-start justify-between gap-4 hover:bg-white/5"
             >
-              <span className="font-medium text-lg">{faq.question}</span>
+              <span className="font-medium text-md max-md:text-sm break-words flex-1">
+                {faq.question}
+              </span>
               <span
-                className="text-lg transform transition-transform duration-200"
+                className="text-lg transform transition-transform duration-200 flex-shrink-0 mt-1"
                 style={{
                   transform:
                     openIndex === index ? "rotate(180deg)" : "rotate(0deg)",
                 }}
               >
-                <IoIosArrowDown className={``} />
+                <IoIosArrowDown />
               </span>
             </button>
             <div
@@ -65,7 +67,7 @@ The code in a smart contract contains all the rules and penalties of the agreeme
                 openIndex === index ? "h-auto" : "h-0"
               }`}
             >
-              <div className="px-6 py-4 text-gray-300 text-base max-md:text-sm whitespace-pre-line">
+              <div className="px-4 sm:px-6 py-4 text-gray-300 text-base max-md:text-sm break-words">
                 {faq.answer}
               </div>
             </div>
