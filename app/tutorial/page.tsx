@@ -70,14 +70,14 @@ export default function Page() {
 
       <div className="text-center py-6">
         <p className="text-gray-300">
-          Don't see your issue listed here?{" "}
+          Don&apos;t see your issue listed here?{" "}
           <Link
             href="/faqs"
             className="text-blue-400 hover:text-blue-300 transition-colors duration-300 underline"
           >
             Check the FAQs
           </Link>{" "}
-          – a user might've asked a similar question!
+          – a user might&apos;ve asked a similar question!
         </p>
       </div>
     </div>
