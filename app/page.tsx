@@ -20,7 +20,7 @@ export default function Home() {
             className="mt-8 mb-4"
           />
 
-          <p>
+          <p className="text-gray-300">
             When you log into the platform, the first step is to navigate to the
             Smart Contracts section and select Create Smart Contract.
           </p>
@@ -35,12 +35,12 @@ export default function Home() {
             className="mt-8 mb-4"
           />
 
-          <div>
+          <div className="text-gray-300">
             <p>
               Here, you&apos;ll be prompted to input key information about your
               collection, including:
             </p>
-            <ul className=" list-disc px-4 space-y-1 mt-1">
+            <ul className=" list-disc px-4 space-y-1 mt-1 ">
               <li>Collection Title</li>
               <li>Collection Description</li>
               <li>
@@ -61,7 +61,7 @@ export default function Home() {
           </div>
         </div>
 
-        <p>
+        <p className="text-gray-300">
           You&apos;ll also have the option to upload a delayed reveal image if
           you wish to use one. Next, you&apos;ll link your contract to the
           relevant NFT project—whether it&apos;s a 1-of-1 collection or a
@@ -69,7 +69,7 @@ export default function Home() {
           via this contract will originate from the associated project.
         </p>
 
-        <p>
+        <p className="text-gray-300">
           After uploading both the delayed reveal image and the final NFTs, you
           can preview how the minting experience will appear to users. A
           dedicated section allows you to configure whitelist settings, such as
@@ -77,7 +77,7 @@ export default function Home() {
           individual can mint during the whitelist phase.
         </p>
 
-        <p>
+        <p className="text-gray-300">
           Once all the details are complete, click Save to finalize the setup.
           You&apos;ll then have the opportunity to review the contract and
           proceed to deployment on the blockchain.
@@ -94,7 +94,7 @@ export default function Home() {
             className="mt-8 mb-4"
           />
 
-          <div>
+          <div className="text-gray-300">
             <p>Deploying your smart contract is straightforward:</p>
             <ul className=" list-disc px-4 space-y-1 mt-1">
               <li>Connect your wallet via MetaMask.</li>
@@ -108,7 +108,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div>
+        <div className="text-gray-300">
           <p>
             After deployment, the platform provides a backend system to manage
             your contract. This includes the ability to:
@@ -120,7 +120,7 @@ export default function Home() {
           </ul>
         </div>
 
-        <p>
+        <p className="text-gray-300">
           You&apos;ll also have access to tools to verify and review your smart
           contract on Etherscan after deployment.
         </p>
@@ -129,7 +129,7 @@ export default function Home() {
           <h2 className="font-medium text-lg">
             Full Ownership of Your Contract
           </h2>
-          <p className="mt-4">
+          <p className="mt-4 text-gray-300">
             When you deploy a smart contract using this platform, the contract
             is associated with your wallet, giving you full ownership and
             control. From managing the user experience to customizing the
@@ -138,7 +138,7 @@ export default function Home() {
           </p>
         </div>
 
-        <p>
+        <p className="text-gray-300">
           By following these steps, you can efficiently create, deploy, and
           manage an NFT collection, offering users a seamless and professional
           minting experience.

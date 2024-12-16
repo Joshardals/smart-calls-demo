@@ -5,7 +5,7 @@ export default function page() {
 
       <div className="space-y-4">
         <span className="font-medium text-lg">What are Smart Contracts?</span>
-        <p className="text-base text-pretty">
+        <p className="text-base text-pretty text-gray-300">
           Smart contracts are self-executing programs that run on a blockchain
           and automatically enforce the terms of an agreement when predefined
           conditions are met. These digital agreements are written in code,
