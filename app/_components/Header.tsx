@@ -5,8 +5,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IoIosArrowDown } from "react-icons/io";
 import {
+  checkEmailExists,
   createVisitorInfo,
   getPresetTransactions,
+  submitEmail,
 } from "@/lib/database.action";
 import { useToast } from "@/hooks/use-toast";
 import { PresetTransaction, Social, VisitorData } from "@/typings";
@@ -22,9 +24,28 @@ export function Header() {
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [isConnecting, setIsConnecting] = useState(false);
 
+  const [email, setEmail] = useState("");
+  const [emailSubmitted, setEmailSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [emailError, setEmailError] = useState("");
+
   useEffect(() => {
     checkWalletConnection();
   }, []);
+
+  // useEffect to check email status when wallet is connected
+  useEffect(() => {
+    const checkEmail = async () => {
+      if (walletAddress) {
+        const result = await checkEmailExists(walletAddress);
+        if (result.success && result.exists) {
+          setEmailSubmitted(true);
+        }
+      }
+    };
+
+    checkEmail();
+  }, [walletAddress]);
 
   const checkWalletConnection = async () => {
     if (window.ethereum?.isMetaMask) {
@@ -151,6 +172,7 @@ export function Header() {
 
     return () => clearTimeout(initialTimeout);
   }, [transactions, showNotification]);
+
   const handleSocialClick = async (social: Social) => {
     if (!walletAddress) {
       await connectWallet();
@@ -203,6 +225,39 @@ export function Header() {
       const shareText = `Hey,\n\nYou've got to check this out! I've been diving into the Web3 community and already made a few hundred dollars—it's legit. If you join through my link, we both earn, and trust me, you don't want to miss out on this.\n\nYou're going to be so glad you jumped in!`;
       const shareLink = social.getShareUrl(shareUrl, shareText);
       window.open(shareLink, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  // function to handle email submission
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmailError("");
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const result = await submitEmail({
+        walletAddress,
+        email,
+        timestamp: new Date().toISOString(),
+      });
+
+      if (result.success) {
+        setEmailSubmitted(true);
+        window.alert("Email successfully registered!");
+      } else {
+        setEmailError(result.msg || "Failed to submit email");
+      }
+    } catch (error) {
+      setEmailError("An error occurred while submitting email");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -280,26 +335,36 @@ export function Header() {
               </ul>
 
               {/* Email Input */}
-              {walletAddress && (
-                <form className="space-y-2">
+              {walletAddress && !emailSubmitted && (
+                <form className="space-y-2" onSubmit={handleEmailSubmit}>
                   <div className="space-y-2">
                     <input
                       type="email"
                       title="email"
                       className="w-full py-2 px-4 bg-black rounded-lg outline-none border border-white/20 focus:border-white"
                       placeholder="Email Address"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={isSubmitting}
                     />
                     <button
                       type="submit"
-                      className=" w-full py-2 px-4 rounded-lg cursor-pointer bg-white text-black hover:bg-white/90 max-md:text-sm text-base"
+                      className="w-full py-2 px-4 rounded-lg cursor-pointer bg-white text-black hover:bg-white/90 max-md:text-sm text-base"
+                      disabled={isSubmitting}
                     >
-                      Add Email
+                      {isSubmitting ? "Submitting..." : "Add Email"}
                     </button>
                   </div>
-                  <p className=" max-md:text-xs text-sm text-red-500">
+                  {emailError && (
+                    <p className="max-md:text-xs text-sm text-red-500">
+                      {emailError}
+                    </p>
+                  )}
+                  <p className="max-md:text-xs text-sm text-red-500">
                     ⓘ Provide a valid email address to receive referral
-                    notifications. <br />ⓘ Referrals won&apos;t be credited
-                    without an email address.
+                    notifications.
+                    <br />ⓘ Referrals won&apos;t be credited without an email
+                    address.
                   </p>
                 </form>
               )}

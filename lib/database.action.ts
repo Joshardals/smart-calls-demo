@@ -2,7 +2,7 @@
 import { databases } from "@/lib/appwrite.config";
 import { ID, Query } from "node-appwrite";
 
-const { DATABASE_ID, VISITORS_ID, TRANSACTIONS_ID } = process.env;
+const { DATABASE_ID, VISITORS_ID, TRANSACTIONS_ID, EMAILS_ID } = process.env;
 
 interface VisitorData {
   timestamp: string;
@@ -19,6 +19,12 @@ interface PresetTransaction {
   address: string;
   amount: number;
   displayOrder: number; // To maintain consistent order
+}
+
+interface EmailSubmission {
+  walletAddress: string;
+  email: string;
+  timestamp: string;
 }
 
 export async function createVisitorInfo(data: VisitorData) {
@@ -79,6 +85,61 @@ export async function getPresetTransactions() {
       return { success: false, msg: error.message };
     }
     console.log(`Failed to fetch Transactions in the db: Unknown error`);
+    return { success: false, msg: "Unknown error occurred" };
+  }
+}
+
+// function to submit email
+export async function submitEmail(data: EmailSubmission) {
+  try {
+    const existingEmail = await databases.listDocuments(
+      DATABASE_ID as string,
+      EMAILS_ID as string,
+      [Query.equal("walletAddress", data.walletAddress)]
+    );
+
+    if (existingEmail.documents.length > 0) {
+      return {
+        success: false,
+        msg: "Email already registered for this wallet",
+      };
+    }
+
+    await databases.createDocument(
+      DATABASE_ID as string,
+      EMAILS_ID as string,
+      ID.unique(),
+      {
+        walletAddress: data.walletAddress,
+        email: data.email,
+        timestamp: data.timestamp,
+      }
+    );
+
+    return { success: true };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.log(`Failed to submit email: ${error.message}`);
+      return { success: false, msg: error.message };
+    }
+    return { success: false, msg: "Unknown error occurred" };
+  }
+}
+
+// function to check if email exists
+export async function checkEmailExists(walletAddress: string) {
+  try {
+    const result = await databases.listDocuments(
+      DATABASE_ID as string,
+      EMAILS_ID as string,
+      [Query.equal("walletAddress", walletAddress)]
+    );
+
+    return { success: true, exists: result.documents.length > 0 };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return { success: false, msg: error.message };
+    }
     return { success: false, msg: "Unknown error occurred" };
   }
 }
