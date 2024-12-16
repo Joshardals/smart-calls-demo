@@ -256,6 +256,7 @@ export function Header() {
       }
     } catch (error) {
       setEmailError("An error occurred while submitting email");
+      console.log("An error occurred while submitting email", error);
     } finally {
       setIsSubmitting(false);
     }
