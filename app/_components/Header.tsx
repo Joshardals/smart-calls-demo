@@ -74,9 +74,9 @@ export function Header() {
       window.location.href = deepLink;
 
       // Fallback to MetaMask download page after delay
-      setTimeout(() => {
-        window.location.href = "https://metamask.io/download/";
-      }, 1500);
+      // setTimeout(() => {
+      //   window.location.href = "https://metamask.io/download/";
+      // }, 1500);
     }
   };
 
