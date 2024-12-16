@@ -28,7 +28,8 @@ export default function Page() {
     {
       title: "Deploy the Contract",
       content:
-        "Start the deployment process by following the prompts.\n\nConfirm wallet connection and approve confirmation for all four stages of deployment.\n\nNote:\nDo not quit the deployment process before completing all four stages, as this may force restart the entire process.",
+        "Start the deployment process by following the prompts.\n\nConfirm wallet connection and approve confirmation for all four stages of deployment.\n\n" +
+        "<span class='text-red-500 font-semibold'>Note:\nDo not quit the deployment process before completing all four stages, as this may force restart the entire process.</span>",
     },
     {
       title: "Completion",
@@ -57,7 +58,10 @@ export default function Page() {
             <h3 className="font-semibold text-lg mb-2">
               Step {index + 1}: {step.title}
             </h3>
-            <p className="text-gray-300 whitespace-pre-line">{step.content}</p>
+            <p
+              className="text-gray-300 whitespace-pre-line"
+              dangerouslySetInnerHTML={{ __html: step.content }}
+            ></p>
           </div>
         ))}
       </div>

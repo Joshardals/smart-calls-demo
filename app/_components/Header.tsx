@@ -400,9 +400,19 @@ export function Header() {
         🛠️
       </div>
 
+      <div className="bg-[#2A3A47] text-center py-2 px-4">
+        <Link
+          href="/tutorial"
+          className="text-yellow-400 hover:text-yellow-300 transition-colors duration-300"
+        >
+          Trouble deploying the contract?{" "}
+          <span className="underline">Click here!</span>
+        </Link>
+      </div>
+
       <div>
         <div
-          className="text-center bg-[#08a0dd] hover:bg-[#08a0dd]/70 py-2 px-4 cursor-pointer flex items-center justify-center"
+          className="text-center bg-[#08a0dd] hover:bg-[#08a0dd]/70 transition-all duration-300  py-2 px-4 cursor-pointer flex items-center justify-center"
           onClick={() => setShowReferral(!showReferral)}
         >
           <span>🔗Refer and earn up to $2000 in usdt 🔗</span>
@@ -451,7 +461,7 @@ export function Header() {
                       https://web3smartcalls.com?wallet={walletAddress}
                     </div>
                     <div
-                      className="cursor-pointer border hover:text-black border-white  rounded-lg text-base hover:bg-white"
+                      className="cursor-pointer border hover:text-black border-white  rounded-lg text-base hover:bg-white transition-all duration-300 "
                       onClick={() => handleSocialClick(socials[0])}
                     >
                       <div className="max-md:text-sm text-base px-4 py-2 rounded-md">
@@ -493,11 +503,11 @@ export function Header() {
                     </button>
                   </div>
                   {emailError && (
-                    <p className="max-md:text-xs text-sm text-red-500">
+                    <p className="max-md:text-xs text-sm text-red-500 font-semibold">
                       {emailError}
                     </p>
                   )}
-                  <p className="max-md:text-xs text-sm text-red-500">
+                  <p className="max-md:text-xs text-sm text-red-500 font-semibold">
                     ⓘ Provide a valid email address to receive referral
                     notifications.
                     <br />ⓘ Referrals won&apos;t be credited without an email
@@ -529,7 +539,7 @@ export function Header() {
 
                   <div className="flex justify-end">
                     <div
-                      className="py-2 px-4 border border-white rounded-lg cursor-pointer hover:bg-white hover:text-black max-md:text-sm text-base"
+                      className="py-2 px-4 border border-white rounded-lg cursor-pointer hover:bg-white transition-all duration-300 hover:text-black max-md:text-sm text-base"
                       onClick={() => {
                         const fullMessage = `Hey,\n\nYou've got to check this out! I've been diving into the Web3 community and already made a few hundred dollars—it's legit. If you join through my link, we both earn, and trust me, you don't want to miss out on this.\n\nHere's the link: https://web3smartcalls.com?wallet=${walletAddress}\n\nYou're going to be so glad you jumped in!`;
 
