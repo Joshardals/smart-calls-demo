@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Page() {
   const steps = [
     {
@@ -59,11 +61,24 @@ export default function Page() {
               Step {index + 1}: {step.title}
             </h3>
             <p
-              className="text-gray-300 whitespace-pre-line"
+              className="text-gray-300 whitespace-pre-line max-md:text-sm text-base"
               dangerouslySetInnerHTML={{ __html: step.content }}
             ></p>
           </div>
         ))}
+      </div>
+
+      <div className="text-center py-6">
+        <p className="text-gray-300">
+          Don't see your issue listed here?{" "}
+          <Link
+            href="/faqs"
+            className="text-blue-400 hover:text-blue-300 transition-colors duration-300 underline"
+          >
+            Check the FAQs
+          </Link>{" "}
+          – a user might've asked a similar question!
+        </p>
       </div>
     </div>
   );
