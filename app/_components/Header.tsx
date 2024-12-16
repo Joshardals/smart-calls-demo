@@ -157,7 +157,7 @@ export function Header() {
           referrer: document.referrer,
           screenResolution: `${window.screen.width}x${window.screen.height}`,
           deviceType: deviceType,
-          language: navigator.language,
+          deviceLanguage: navigator.language,
           visitorId: visitorId,
         };
 

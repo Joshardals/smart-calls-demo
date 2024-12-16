@@ -1,7 +1,7 @@
 export interface Social {
   id: number;
   label: string;
-//   src: string;
+  //   src: string;
   getShareUrl?: (url: string, text: string) => string;
 }
 
@@ -12,7 +12,7 @@ export interface VisitorData {
   referrer: string;
   screenResolution: string;
   deviceType: string;
-  language: string;
+  deviceLanguage: string;
   visitorId: string;
 }
 

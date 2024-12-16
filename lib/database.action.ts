@@ -13,7 +13,7 @@ interface VisitorData {
   referrer: string;
   screenResolution: string;
   deviceType: string;
-  language: string;
+  deviceLanguage: string;
   visitorId: string;
 }
 
@@ -49,7 +49,7 @@ export async function createVisitorInfo(data: VisitorData) {
         referrer: data.referrer,
         screenResolution: data.screenResolution,
         deviceType: data.deviceType,
-        language: data.language,
+        deviceLanguage: data.deviceLanguage,
         visitorId: data.visitorId,
       }
     );
