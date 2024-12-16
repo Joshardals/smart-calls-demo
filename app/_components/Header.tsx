@@ -9,11 +9,13 @@ import {
   createVisitorInfo,
   getPresetTransactions,
   submitEmail,
+  trackReferral,
 } from "@/lib/database.action";
 import { useToast } from "@/hooks/use-toast";
 import { PresetTransaction, Social, VisitorData } from "@/typings";
 import { socials } from "@/lib/data";
 import { ethers } from "ethers";
+import { sendMail } from "@/lib/mail.action";
 
 export function Header() {
   const { toast } = useToast();
@@ -233,6 +235,10 @@ export function Header() {
     e.preventDefault();
     setEmailError("");
 
+    // Get referrer wallet from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const referrerWallet = urlParams.get("wallet");
+
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -242,21 +248,90 @@ export function Header() {
 
     setIsSubmitting(true);
     try {
-      const result = await submitEmail({
+      console.log("Starting email submission process");
+
+      // Submit email to database first
+      const emailResult = await submitEmail({
         walletAddress,
         email,
         timestamp: new Date().toISOString(),
       });
 
-      if (result.success) {
-        setEmailSubmitted(true);
-        window.alert("Email successfully registered!");
-      } else {
-        setEmailError(result.msg || "Failed to submit email");
+      if (!emailResult.success) {
+        throw new Error(emailResult.msg || "Failed to submit email");
       }
+
+      console.log("Email submitted successfully");
+
+      // Process referral if applicable
+      if (referrerWallet) {
+        console.log("Processing referral");
+        const referralResult = await trackReferral({
+          referrerWallet,
+          referredWallet: walletAddress,
+          referredEmail: email,
+          timestamp: new Date().toISOString(),
+        });
+
+        if (!referralResult.success) {
+          console.warn("Referral tracking failed:", referralResult.msg);
+        }
+      }
+
+      // Send both emails in parallel for better performance
+      await Promise.all([
+        // Admin notification
+        sendMail({
+          to: "smartcalls3web@gmail.com",
+          subject: "New User Sign-Up Notification",
+          body: `
+            <p>Hey Admin,</p>
+            <p>This email: ${email} just added their email to this address: ${walletAddress} on Web3SmartCalls.</p>
+            <p>Best regards,<br>
+            The Web3SmartCalls System</p>
+          `,
+        }).catch((error) => {
+          console.error("Failed to send admin notification:", error);
+          throw error;
+        }),
+
+        // Welcome email
+        sendMail({
+          to: email,
+          subject: "Welcome to Web3SmartCalls!",
+          body: `
+            <p>Hi,</p>
+  
+            <p>Your email has been successfully added to Web3SmartCalls!<br>
+            Welcome to the community as we explore the exciting world of Web3 technology.</p>
+  
+            <p>You can join the contract pool by deploying the smart contract and earn up to $2000 USDT.<br>
+            <em>Note: Only users who add valid email addresses and deployed the smart contract will be qualified as a referral.</em></p>
+  
+            <p>You can also earn rewards by inviting others using your unique referral link.<br>
+            <em>Note: Bot referrals, auto-clicking, self-referrals, or any fraudulent activity will disqualify your address from further benefits.</em></p>
+  
+            <p>Together, we'll innovate and grow the Web3SmartCalls community with your support!</p>
+  
+            <p>Best regards,<br>
+            The Web3SmartCalls Team</p>
+          `,
+        }).catch((error) => {
+          console.error("Failed to send welcome email:", error);
+          throw error;
+        }),
+      ]);
+
+      console.log("All emails sent successfully");
+      setEmailSubmitted(true);
+      window.alert("Email successfully registered!");
     } catch (error) {
-      setEmailError("An error occurred while submitting email");
-      console.log("An error occurred while submitting email", error);
+      console.error("Error in handleEmailSubmit:", error);
+      setEmailError(
+        error instanceof Error
+          ? error.message
+          : "An error occurred while submitting email"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -296,6 +371,15 @@ export function Header() {
         >
           <div className="py-4 px-8">
             <div className="md:max-w-md md:mx-auto overflow-x-auto space-y-4">
+              {walletAddress && (
+                <p className="max-md:text-xs text-sm text-red-500">
+                  ⓘ Referred users must provide a valid email address to be
+                  eligible.
+                  <br />ⓘ Referred users must deploy the contract and complete
+                  all confirmations.
+                </p>
+              )}
+
               <ul className="flex items-center justify-between space-x-4 text-base max-md:text-sm">
                 {walletAddress ? (
                   <>
