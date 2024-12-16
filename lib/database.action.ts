@@ -272,14 +272,14 @@ export async function trackReferral(data: ReferralData) {
     ];
 
     // Add warning email if referral count exceeds 3
-    if (referralCount >= 3) {
+    if (referralCount >= 5) {
       emailTasks.push(
         sendMail({
           to: referrerEmailAddress,
           subject: "Referral Activity Flagged as Malicious",
           body: `
             <p>Hi,</p>
-            <p>After a review of your referrals, the Web3SmartCalls team has flagged your referral activity as malicious due to one or more of the following reasons:</p>
+            <p>After a review of your referrals, the Web3SmartCalls. team has flagged your referral activity as malicious due to one or more of the following reasons:</p>
             <ul>
               <li>Use of auto-clickers</li>
               <li>Bot-generated referrals</li>
