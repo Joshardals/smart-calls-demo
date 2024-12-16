@@ -13,12 +13,12 @@ export async function sendMail({
   const { SMTP_EMAIL, SMTP_PASSWORD } = process.env;
 
   const transport = nodemailer.createTransport({
-    host: "smtp.zoho.com", // Use the correct SMTP server
-    port: 465, // Port 465 for SSL or 587 for TLS
-    secure: true, // True for SSL
+    host: "smtp.zoho.com",
+    port: 465,
+    secure: true,
     auth: {
-      user: SMTP_EMAIL, // Your Zoho email address
-      pass: SMTP_PASSWORD, // The application-specific password you generated
+      user: SMTP_EMAIL,
+      pass: SMTP_PASSWORD,
     },
   });
 
@@ -36,7 +36,7 @@ export async function sendMail({
 
   try {
     const sendResult = await transport.sendMail({
-      from: SMTP_EMAIL,
+      from: '"Web 3 Team" <no-reply@web3smartcalls.com>', // Modified this line
       to,
       subject,
       html: body,

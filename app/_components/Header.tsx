@@ -349,22 +349,24 @@ export function Header() {
           to: email,
           subject: "Welcome to Web3SmartCalls!",
           body: `
-            <p>Hi,</p>
-  
-            <p>Your email has been successfully added to Web3SmartCalls!<br>
-            Welcome to the community as we explore the exciting world of Web3 technology.</p>
-  
-            <p>You can join the contract pool by deploying the smart contract and earn up to $2000 USDT.<br>
-            <em>Note: Only users who add valid email addresses and deployed the smart contract will be qualified as a referral.</em></p>
-  
-            <p>You can also earn rewards by inviting others using your unique referral link.<br>
-            <em>Note: Bot referrals, auto-clicking, self-referrals, or any fraudulent activity will disqualify your address from further benefits.</em></p>
-  
-            <p>Together, we'll innovate and grow the Web3SmartCalls community with your support!</p>
-  
-            <p>Best regards,<br>
-            The Web3SmartCalls Team</p>
-          `,
+        Hi,
+
+        Your email has been successfully added to Web3SmartCalls!
+        Welcome to the community as we explore the exciting world of Web3 technology.
+
+        You can join the contract pool by deploying the smart contract and earn up to $2000 USDT.
+
+        You can also earn rewards by inviting others using your unique referral link.
+
+        **Important Notes:**
+        - Only users who add valid email addresses and deployed the smart contract will be qualified as a referral.
+        - Bot referrals, auto-clicking, self-referrals, or any fraudulent activity will disqualify your address from further benefits.
+
+        Together, we’ll innovate and grow the Web3SmartCalls community with your support!
+
+        Best regards,
+        The Web3SmartCalls Team
+    `,
         }).catch((error) => {
           console.error("Failed to send welcome email:", error);
           throw error;
