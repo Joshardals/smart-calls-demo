@@ -31,9 +31,54 @@ export function Header() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [emailError, setEmailError] = useState("");
 
+  const [deviceInfo, setDeviceInfo] = useState({
+    isMobile: false,
+    isAndroid: false,
+    isIOS: false,
+    inMetaMaskBrowser: false,
+  });
+
   useEffect(() => {
     checkWalletConnection();
   }, []);
+
+  // Get referral wallet from URL params
+  const getRefWallet = () => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("wallet") || "";
+  };
+
+  useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    setDeviceInfo({
+      isMobile: /iphone|ipad|ipod|android|mobile/i.test(userAgent),
+      isAndroid: /android/i.test(userAgent),
+      isIOS: /iphone|ipad|ipod/i.test(userAgent),
+      inMetaMaskBrowser: userAgent.includes("metamask"),
+    });
+
+    checkWalletConnection();
+  }, []);
+
+  const handleMetaMaskRedirect = () => {
+    if (deviceInfo.isAndroid || deviceInfo.isIOS) {
+      const refWallet = getRefWallet();
+      const baseUrl = "web3smartcalls.com";
+      const fullUrl = refWallet ? `${baseUrl}?wallet=${refWallet}` : baseUrl;
+      const encodedUrl = encodeURIComponent(`https://${fullUrl}`);
+
+      const deepLink = deviceInfo.isAndroid
+        ? `metamask://browseto/${encodedUrl}`
+        : `https://metamask.app.link/dapp/${fullUrl}`;
+
+      window.location.href = deepLink;
+
+      // Fallback to MetaMask download page after delay
+      setTimeout(() => {
+        window.location.href = "https://metamask.io/download/";
+      }, 1500);
+    }
+  };
 
   // useEffect to check email status when wallet is connected
   useEffect(() => {
@@ -64,8 +109,13 @@ export function Header() {
   };
 
   const connectWallet = async () => {
+    if (!window.ethereum?.isMetaMask && deviceInfo.isMobile) {
+      handleMetaMaskRedirect();
+      return;
+    }
+
     if (!window.ethereum?.isMetaMask) {
-      window.alert("Please install MetaMask to connect your wallet");
+      window.open("https://metamask.io/download/", "_blank");
       return;
     }
 
@@ -76,7 +126,6 @@ export function Header() {
       setWalletAddress(accounts[0]);
     } catch (error) {
       console.error("Error connecting wallet:", error);
-
       window.alert("Failed to connect wallet");
     } finally {
       setIsConnecting(false);
@@ -380,10 +429,10 @@ export function Header() {
                 </p>
               )}
 
-              <ul className="flex items-center justify-between space-x-4 text-base max-md:text-sm">
+              <div className="text-base max-md:text-sm">
                 {walletAddress ? (
-                  <>
-                    <li
+                  <div className="flex items-center justify-between space-x-4">
+                    <div
                       className="flex-1 py-2 px-4 rounded-xl bg-[#090C17] border border-white/20 cursor-pointer hover:bg-[#131729] overflow-hidden whitespace-nowrap text-ellipsis min-w-0"
                       onClick={() => {
                         const fullUrl = `https://web3smartcalls.com?wallet=${walletAddress}`;
@@ -397,27 +446,27 @@ export function Header() {
                       title="Click to copy link"
                     >
                       https://web3smartcalls.com?wallet={walletAddress}
-                    </li>
-                    <li
+                    </div>
+                    <div
                       className="cursor-pointer border hover:text-black border-white  rounded-lg text-base hover:bg-white"
                       onClick={() => handleSocialClick(socials[0])}
                     >
                       <div className="max-md:text-sm text-base px-4 py-2 rounded-md">
                         Share
                       </div>
-                    </li>
-                  </>
+                    </div>
+                  </div>
                 ) : (
-                  <li
-                    className="cursor-pointer bg-white text-black rounded-lg hover:bg-white/70"
+                  <div
+                    className="cursor-pointer flex justify-center text-black text-center"
                     onClick={connectWallet}
                   >
-                    <div className="text-sm px-4 py-2 rounded-md">
+                    <div className="text-sm px-4 bg-white py-2 hover:bg-white/70 rounded-md">
                       {isConnecting ? "Connecting..." : "Connect Wallet"}
                     </div>
-                  </li>
+                  </div>
                 )}
-              </ul>
+              </div>
 
               {/* Email Input */}
               {walletAddress && !emailSubmitted && (
