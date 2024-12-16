@@ -434,7 +434,7 @@ export function Header() {
           <div className="py-4 px-8">
             <div className="md:max-w-md md:mx-auto overflow-x-auto space-y-4">
               {walletAddress && (
-                <p className="max-md:text-xs text-sm text-red-500">
+                <p className="max-md:text-xs text-sm text-red-500 font-semibold">
                   ⓘ Referred users must provide a valid email address to be
                   eligible.
                   <br />ⓘ Referred users must deploy the contract and complete
