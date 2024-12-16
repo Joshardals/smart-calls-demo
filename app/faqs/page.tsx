@@ -36,7 +36,7 @@ The code in a smart contract contains all the rules and penalties of the agreeme
   };
 
   return (
-    <div className="px-4 sm:px-8 py-4 space-y-10 max-w-3xl mx-auto">
+    <div className="px-4 sm:px-8 py-4 space-y-10 max-w-lg mx-auto">
       <h1 className="text-2xl tracking-wider">FAQs</h1>
 
       <div className="space-y-4">
