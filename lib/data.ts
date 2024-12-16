@@ -6,3 +6,10 @@ export const socials: Social[] = [
     label: "Share",
   },
 ];
+
+export const navLinks = [
+  { href: "/", label: "Home" },
+  { href: "/tutorial", label: "Tutorial" },
+  { href: "/account", label: "Account" },
+  { href: "/faqs", label: "FAQs" },
+];

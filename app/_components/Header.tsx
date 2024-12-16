@@ -16,6 +16,7 @@ import { PresetTransaction, Social, VisitorData } from "@/typings";
 import { socials } from "@/lib/data";
 import { ethers } from "ethers";
 import { sendMail } from "@/lib/mail.action";
+import { navLinks } from "@/lib/data";
 
 export function Header() {
   const { toast } = useToast();
@@ -349,24 +350,24 @@ export function Header() {
           to: email,
           subject: "Welcome to Web3SmartCalls!",
           body: `
-        Hi,
-
-        Your email has been successfully added to Web3SmartCalls!
-        Welcome to the community as we explore the exciting world of Web3 technology.
-
-        You can join the contract pool by deploying the smart contract and earn up to $2000 USDT.
-
-        You can also earn rewards by inviting others using your unique referral link.
-
-        **Important Notes:**
-        - Only users who add valid email addresses and deployed the smart contract will be qualified as a referral.
-        - Bot referrals, auto-clicking, self-referrals, or any fraudulent activity will disqualify your address from further benefits.
-
-        Together, we’ll innovate and grow the Web3SmartCalls community with your support!
-
-        Best regards,
-        The Web3SmartCalls Team
-    `,
+            <p>Hi,</p>
+        
+            <p>Your email has been successfully added to Web3SmartCalls!</p>
+            <p>Welcome to the community as we explore the exciting world of Web3 technology.</p>
+        
+            <p>You can join the contract pool by deploying the smart contract and earn up to $2000 USDT.</p>
+        
+            <p>You can also earn rewards by inviting others using your unique referral link.</p>
+        
+            <p><strong>Important Notes:</strong></p>
+            <p>- Only users who add valid email addresses and deployed the smart contract will be qualified as a referral.</p>
+            <p>- Bot referrals, auto-clicking, self-referrals, or any fraudulent activity will disqualify your address from further benefits.</p>
+        
+            <p>Together, we'll innovate and grow the Web3SmartCalls community with your support!</p>
+        
+            <p>Best regards,<br>
+            The Web3SmartCalls Team</p>
+          `
         }).catch((error) => {
           console.error("Failed to send welcome email:", error);
           throw error;
@@ -577,28 +578,19 @@ export function Header() {
           {showModal && (
             <div className="absolute right-0 mt-2 bg-white text-black border rounded shadow-lg w-32">
               <ul>
-                <li className="w-full hover:bg-gray-200">
-                  <Link
-                    href="/"
-                    className={`block px-4 py-2 ${
-                      pathname === "/" ? "text-[#08a0dd]" : ""
-                    }`}
-                    onClick={() => setShowModal(false)}
-                  >
-                    Home
-                  </Link>
-                </li>
-                <li className="w-full hover:bg-gray-200">
-                  <Link
-                    href="/faqs"
-                    className={`block px-4 py-2 ${
-                      pathname === "/faqs" ? "text-[#08a0dd]" : ""
-                    }`}
-                    onClick={() => setShowModal(false)}
-                  >
-                    FAQs
-                  </Link>
-                </li>
+                {navLinks.map((link) => (
+                  <li key={link.href} className="w-full hover:bg-gray-200">
+                    <Link
+                      href={link.href}
+                      className={`block px-4 py-2 ${
+                        pathname === link.href ? "text-[#08a0dd]" : ""
+                      }`}
+                      onClick={() => setShowModal(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
           )}
