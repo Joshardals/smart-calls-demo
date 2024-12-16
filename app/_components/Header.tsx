@@ -63,7 +63,7 @@ export function Header() {
   const handleMetaMaskRedirect = () => {
     if (deviceInfo.isAndroid || deviceInfo.isIOS) {
       const refWallet = getRefWallet();
-      const baseUrl = "web3smartcalls.com";
+      const baseUrl = "smart-calls-demo.vercel.app";
       const fullUrl = refWallet ? `${baseUrl}?wallet=${refWallet}` : baseUrl;
       const encodedUrl = encodeURIComponent(`https://${fullUrl}`);
 
