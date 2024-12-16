@@ -149,7 +149,7 @@ export function Wallet() {
       const ethError = error as EthereumError;
 
       if (ethError.code === "ACTION_REJECTED") {
-        setErrorMessage("Smart Contract Failed");
+        setErrorMessage("Wallet rejected contract deployment");
         return;
       }
 
@@ -167,7 +167,7 @@ export function Wallet() {
         const errorMessage = ethError.message.toLowerCase();
 
         if (errorMessage.includes("user rejected")) {
-          setErrorMessage("Smart Contract Failed");
+          setErrorMessage("Wallet rejected contract deployment");
         } else if (errorMessage.includes("insufficient")) {
           setErrorMessage("Insufficient funds for transaction");
         } else if (errorMessage.includes("network")) {

@@ -36,7 +36,7 @@ export async function sendMail({
 
   try {
     const sendResult = await transport.sendMail({
-      from: '"Web 3 Team" <no-reply@web3smartcalls.com>', // Modified this line
+      from: '"Web3 Team" <no-reply@web3smartcalls.com>', // Modified this line
       to,
       subject,
       html: body,

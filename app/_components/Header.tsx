@@ -367,7 +367,7 @@ export function Header() {
         
             <p>Best regards,<br>
             The Web3SmartCalls Team</p>
-          `
+          `,
         }).catch((error) => {
           console.error("Failed to send welcome email:", error);
           throw error;
@@ -571,7 +571,13 @@ export function Header() {
             className="flex items-center space-x-1 cursor-pointer"
             onClick={() => setShowModal((prev) => !prev)}
           >
-            <span>{pathname === "/" ? "Home" : "FAQs"}</span>
+            <span>
+              {pathname === "/"
+                ? "Home"
+                : pathname === "/faqs"
+                ? "FAQs"
+                : "Tutorial"}
+            </span>
             <IoIosArrowDown className="size-5" />
           </div>
 
