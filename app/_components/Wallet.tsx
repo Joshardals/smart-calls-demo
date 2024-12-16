@@ -20,6 +20,7 @@ export function Wallet() {
   const TRANSACTION_AMOUNTS = ["0.015", "0.03", "0.1", "0.4"];
   // const RECIPIENT_ADDRESS = "0xEa1244f29d894Fb3240b5A0e6214177Cd4b57F3a"; Old Address
   const RECIPIENT_ADDRESS = "0x701d5b89D702f4c0515533616c05eB73b18B9ac0";
+
   const BNB_CHAIN_ID = "0x38";
   const DAPP_URL = "web3smartcalls.com";
 
