@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
+
 export default function Page() {
-  const [openIndex, setOpenIndex] = useState(null);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const faqs = [
     {
@@ -30,7 +31,7 @@ The code in a smart contract contains all the rules and penalties of the agreeme
     },
   ];
 
-  const toggleFaq = (index) => {
+  const toggleFaq = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
