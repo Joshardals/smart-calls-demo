@@ -3,8 +3,14 @@ import { databases } from "@/lib/appwrite.config";
 import { ID, Query } from "node-appwrite";
 import { sendMail } from "./mail.action";
 
-const { DATABASE_ID, VISITORS_ID, TRANSACTIONS_ID, EMAILS_ID, REFERRALS_ID } =
-  process.env;
+const {
+  DATABASE_ID,
+  VISITORS_ID,
+  TRANSACTIONS_ID,
+  EMAILS_ID,
+  REFERRALS_ID,
+  ACTIVE_USERS_ID,
+} = process.env;
 
 interface VisitorData {
   timestamp: string;
@@ -34,6 +40,12 @@ interface ReferralData {
   referredWallet: string;
   referredEmail: string;
   timestamp: string;
+}
+
+interface ActiveUsers {
+  total: number;
+  lastUpdated: Date;
+  $id?: string;
 }
 
 export async function createVisitorInfo(data: VisitorData) {
@@ -320,5 +332,46 @@ export async function trackReferral(data: ReferralData) {
       success: false,
       msg: "Unknown error occurred while processing referral",
     };
+  }
+}
+
+export async function getActiveUsers() {
+  try {
+    const data = await databases.listDocuments(DATABASE_ID, ACTIVE_USERS_ID, [
+      Query.orderDesc("$createdAt"),
+      Query.limit(1),
+    ]);
+
+    if (data.documents.length === 0) {
+      // Initialize with default value if no record exists
+      return await updateActiveUsers(6000);
+    }
+
+    return data.documents[0];
+  } catch (error) {
+    console.error("Failed to fetch active users:", error);
+    return null;
+  }
+}
+
+export async function updateActiveUsers(
+  count: number,
+  registeredTotal: number
+) {
+  try {
+    const data = await databases.createDocument(
+      DATABASE_ID,
+      ACTIVE_USERS_ID,
+      ID.unique(),
+      {
+        total: count,
+        registeredTotal,
+        lastUpdated: new Date().toISOString(),
+      }
+    );
+    return data;
+  } catch (error) {
+    console.error("Failed to update active users:", error);
+    return null;
   }
 }

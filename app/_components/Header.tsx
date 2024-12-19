@@ -17,6 +17,7 @@ import { socials } from "@/lib/data";
 import { ethers } from "ethers";
 import { sendMail } from "@/lib/mail.action";
 import { navLinks } from "@/lib/data";
+import Status from "./Status";
 
 export function Header() {
   const { toast } = useToast();
@@ -391,7 +392,7 @@ export function Header() {
 
   return (
     <header className="">
-      <div className="bg-[#243039] text-center max-md:text-sm text-base py-2 px-4">
+      <div className="bg-[#243039] text-center max-md:text-sm text-base py-2 px-8">
         🛠️ TypeScript libraries for Interaction with the Ethereum JSON RPC API
         on{" "}
         <Link href="https://github.com/web3/web3.js" className="text-blue-500">
@@ -399,6 +400,8 @@ export function Header() {
         </Link>{" "}
         🛠️
       </div>
+
+      <Status />
 
       <div className="bg-[#2A3A47] text-center py-2 px-4">
         <Link
