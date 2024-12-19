@@ -46,24 +46,17 @@ export default function Status() {
       }
     };
 
-    const now = new Date();
-    const msToNextMinute =
-      60000 - (now.getSeconds() * 1000 + now.getMilliseconds());
-
+    // Initial update
     updateStats();
 
-    const initialTimeout = setTimeout(() => {
-      updateStats();
-      const interval = setInterval(updateStats, 15000);
-      return () => clearInterval(interval);
-    }, msToNextMinute);
+    // Poll every 3 seconds to ensure we catch the random interval updates
+    const interval = setInterval(updateStats, 1000);
 
     return () => {
       isMounted = false;
-      clearTimeout(initialTimeout);
+      clearInterval(interval);
     };
   }, []);
-
   return (
     <div className="px-8 py-2">
       <div className="flex items-center justify-between">

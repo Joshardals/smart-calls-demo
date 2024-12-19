@@ -350,45 +350,46 @@ interface StatsDocument extends Models.Document {
   lastRegistrationUpdate: string;
 }
 
-const MIN_ACTIVE_RATIO = 0.25;
-const MAX_ACTIVE_RATIO = 0.45;
+const MIN_ACTIVE_RATIO = 0.15;
+const MAX_ACTIVE_RATIO = 0.35;
 
 function generateNewStats(previousStats: UserStats): UserStats {
   const now = new Date();
   const lastRegUpdate = new Date(previousStats.lastRegistrationUpdate);
   const timeSinceLastReg = now.getTime() - lastRegUpdate.getTime();
-  const shouldUpdateRegistrations = timeSinceLastReg >= 8 * 60 * 1000;
+
+  // Random interval between 8 and 15 minutes (in milliseconds)
+  const updateInterval =
+    (Math.floor(Math.random() * (15 - 8 + 1)) + 8) * 60 * 1000;
+  const shouldUpdateRegistrations = timeSinceLastReg >= updateInterval;
 
   let newTotalRegistered = previousStats.totalRegistered;
   let newLastRegUpdate = previousStats.lastRegistrationUpdate;
 
-  // Only increment if enough time has passed
-  if (shouldUpdateRegistrations && Math.random() < 0.3) {
-    const increment = Math.floor(Math.random() * 3) + 1;
+  if (shouldUpdateRegistrations) {
+    // Random increment between 7 and 11 users
+    const increment = Math.floor(Math.random() * (11 - 7 + 1)) + 7;
     newTotalRegistered += increment;
     newLastRegUpdate = now.toISOString();
   }
 
-  // Calculate active users based on time of day
+  // Calculate active users
   const hour = now.getHours();
   let timeModifier = 1;
 
-  // Peak hours: 9-11 AM and 7-9 PM
+  // Peak hours modifier
   if ((hour >= 9 && hour <= 11) || (hour >= 19 && hour <= 21)) {
-    timeModifier = 1.2;
-  }
-  // Low activity hours: 2-5 AM
-  else if (hour >= 2 && hour <= 5) {
-    timeModifier = 0.7;
+    timeModifier = 1.3;
+  } else if (hour >= 2 && hour <= 5) {
+    timeModifier = 0.5;
   }
 
-  // Calculate base active users with some randomness
   const targetRatio =
     MIN_ACTIVE_RATIO + Math.random() * (MAX_ACTIVE_RATIO - MIN_ACTIVE_RATIO);
   const baseActiveUsers = Math.round(newTotalRegistered * targetRatio);
 
-  // Apply time modifier and add small random variation
-  const variation = Math.random() * 0.1 - 0.05; // ±5% variation
+  // More dramatic variations for active users
+  const variation = Math.random() * 0.4 - 0.2; // ±20% variation
   const newActiveUsers = Math.round(
     baseActiveUsers * timeModifier * (1 + variation)
   );
@@ -407,7 +408,6 @@ export async function getCurrentStats(): Promise<StatsResponse> {
   }
 
   try {
-    // Get the latest stats document
     const data = await databases.listDocuments<StatsDocument>(
       DATABASE_ID,
       STATS_COLLECTION_ID,
@@ -415,12 +415,10 @@ export async function getCurrentStats(): Promise<StatsResponse> {
     );
 
     const now = new Date();
-    const currentMinute = now.getMinutes();
+    // Random update interval between 5 and 20 seconds
+    const updateInterval = Math.floor(Math.random() * (20 - 5 + 1)) + 5;
+    const shouldUpdate = now.getSeconds() % updateInterval === 0;
 
-    // Only update at specific intervals (every 4 minutes)
-    const shouldUpdate = currentMinute % 4 === 0 && now.getSeconds() < 10;
-
-    // If no documents exist, create initial stats
     if (data.documents.length === 0) {
       const initialStats: UserStats = {
         activeUsers: 80000,
@@ -443,29 +441,8 @@ export async function getCurrentStats(): Promise<StatsResponse> {
     const lastUpdate = new Date(latestDoc.timestamp);
     const timeDiff = now.getTime() - lastUpdate.getTime();
 
-    // Only update if enough time has passed and it's the right time
-    if (shouldUpdate && timeDiff >= 230000) {
-      // Double-check that no other client has updated in the meantime
-      const latestCheck = await databases.listDocuments<StatsDocument>(
-        DATABASE_ID,
-        STATS_COLLECTION_ID,
-        [Query.orderDesc("timestamp"), Query.limit(1)]
-      );
-
-      // If another client has updated, return their data
-      if (latestCheck.documents[0].$id !== latestDoc.$id) {
-        return {
-          success: true,
-          data: {
-            activeUsers: latestCheck.documents[0].activeUsers,
-            totalRegistered: latestCheck.documents[0].totalRegistered,
-            timestamp: latestCheck.documents[0].timestamp,
-            lastRegistrationUpdate:
-              latestCheck.documents[0].lastRegistrationUpdate,
-          },
-        };
-      }
-
+    if (shouldUpdate && timeDiff >= 5000) {
+      // Minimum 5 seconds between updates
       const currentStats: UserStats = {
         activeUsers: latestDoc.activeUsers,
         totalRegistered: latestDoc.totalRegistered,
@@ -475,7 +452,6 @@ export async function getCurrentStats(): Promise<StatsResponse> {
 
       const newStats = generateNewStats(currentStats);
 
-      // Create new document
       await databases.createDocument(
         DATABASE_ID,
         STATS_COLLECTION_ID,
@@ -483,16 +459,15 @@ export async function getCurrentStats(): Promise<StatsResponse> {
         newStats
       );
 
-      // Clean up old documents
+      // Keep only recent documents
       const oldDocs = await databases.listDocuments<StatsDocument>(
         DATABASE_ID,
         STATS_COLLECTION_ID,
-        [Query.orderDesc("timestamp"), Query.limit(100)]
+        [Query.orderDesc("timestamp"), Query.limit(30)]
       );
 
-      if (oldDocs.documents.length > 50) {
-        // Reduced from 100 to 50
-        const docsToDelete = oldDocs.documents.slice(50);
+      if (oldDocs.documents.length > 20) {
+        const docsToDelete = oldDocs.documents.slice(20);
         for (const doc of docsToDelete) {
           await databases.deleteDocument(
             DATABASE_ID,
@@ -505,7 +480,6 @@ export async function getCurrentStats(): Promise<StatsResponse> {
       return { success: true, data: newStats };
     }
 
-    // Return existing stats if no update is needed
     return {
       success: true,
       data: {
