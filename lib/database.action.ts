@@ -350,8 +350,7 @@ interface StatsDocument extends Models.Document {
   lastRegistrationUpdate: string;
 }
 
-const MIN_ACTIVE_RATIO = 0.15;
-const MAX_ACTIVE_RATIO = 0.35;
+const MIN_ACTIVE_USERS = 80000;
 
 function generateNewStats(previousStats: UserStats): UserStats {
   const now = new Date();
@@ -373,7 +372,7 @@ function generateNewStats(previousStats: UserStats): UserStats {
     newLastRegUpdate = now.toISOString();
   }
 
-  // Calculate active users
+  // Calculate active users with random increase or decrease
   const hour = now.getHours();
   let timeModifier = 1;
 
@@ -384,14 +383,19 @@ function generateNewStats(previousStats: UserStats): UserStats {
     timeModifier = 0.5;
   }
 
-  const targetRatio =
-    MIN_ACTIVE_RATIO + Math.random() * (MAX_ACTIVE_RATIO - MIN_ACTIVE_RATIO);
-  const baseActiveUsers = Math.round(newTotalRegistered * targetRatio);
+  // Random change for active users (-500 to +500)
+  const activeIncrement = Math.floor(Math.random() * (1000 + 1)) - 500;
+  let newActiveUsers = previousStats.activeUsers + activeIncrement;
 
-  // More dramatic variations for active users
-  const variation = Math.random() * 0.4 - 0.2; // ±20% variation
-  const newActiveUsers = Math.round(
-    baseActiveUsers * timeModifier * (1 + variation)
+  // Apply time modifier to the change
+  newActiveUsers = Math.round(newActiveUsers * timeModifier);
+
+  // Ensure active users stay within bounds:
+  // 1. Not less than minimum (80k)
+  // 2. Not more than total registered users
+  newActiveUsers = Math.min(
+    newTotalRegistered,
+    Math.max(newActiveUsers, MIN_ACTIVE_USERS)
   );
 
   return {
