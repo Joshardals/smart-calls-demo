@@ -82,7 +82,9 @@ export default function Status() {
         </div>
 
         <div className="flex flex-col items-end">
-          <span className="text-gray-200 text-sm font-medium">Total Users</span>
+          <span className="text-gray-200 text-sm font-medium">
+            Registered Users
+          </span>
           {isLoading ? (
             <div className="h-4 w-24 bg-gray-700 rounded animate-pulse"></div>
           ) : (

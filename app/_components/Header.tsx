@@ -393,8 +393,7 @@ export function Header() {
   return (
     <header className="">
       <div className="bg-[#243039] text-center max-md:text-sm text-base py-2 px-8">
-        🛠️ TypeScript libraries for Interaction with the Ethereum JSON RPC API
-        on{" "}
+        🛠️ Ethereum JSON RPC API on{" "}
         <Link href="https://github.com/web3/web3.js" className="text-blue-500">
           Github
         </Link>{" "}
