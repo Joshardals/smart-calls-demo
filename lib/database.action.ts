@@ -1,5 +1,5 @@
 "use server";
-import { databases } from "@/lib/appwrite.config";
+import { databases, client } from "@/lib/appwrite.config";
 import { ID, Query } from "node-appwrite";
 import { sendMail } from "./mail.action";
 
@@ -9,7 +9,7 @@ const {
   TRANSACTIONS_ID,
   EMAILS_ID,
   REFERRALS_ID,
-  ACTIVE_USERS_ID,
+  STATS_COLLECTION_ID,
 } = process.env;
 
 interface VisitorData {
@@ -40,12 +40,6 @@ interface ReferralData {
   referredWallet: string;
   referredEmail: string;
   timestamp: string;
-}
-
-interface ActiveUsers {
-  total: number;
-  lastUpdated: Date;
-  $id?: string;
 }
 
 export async function createVisitorInfo(data: VisitorData) {
@@ -335,43 +329,149 @@ export async function trackReferral(data: ReferralData) {
   }
 }
 
-export async function getActiveUsers() {
-  try {
-    const data = await databases.listDocuments(DATABASE_ID, ACTIVE_USERS_ID, [
-      Query.orderDesc("$createdAt"),
-      Query.limit(1),
-    ]);
-
-    if (data.documents.length === 0) {
-      // Initialize with default value if no record exists
-      return await updateActiveUsers(6000);
-    }
-
-    return data.documents[0];
-  } catch (error) {
-    console.error("Failed to fetch active users:", error);
-    return null;
-  }
+interface UserStats {
+  activeUsers: number;
+  totalRegistered: number;
+  timestamp: string;
 }
 
-export async function updateActiveUsers(
-  count: number,
-  registeredTotal: number
-) {
+// Keep track of trend direction and strength
+let trendMomentum = 0; // Range: -1 to 1
+const MOMENTUM_CHANGE_CHANCE = 0.1; // 10% chance to shift trend direction
+
+function generateNewStats(baseActive: number, baseTotal: number): UserStats {
+  // Possibly change trend direction
+  if (Math.random() < MOMENTUM_CHANGE_CHANCE) {
+    trendMomentum += Math.random() * 0.4 - 0.2; // Shift by -0.2 to +0.2
+    trendMomentum = Math.max(-1, Math.min(1, trendMomentum)); // Clamp between -1 and 1
+  }
+
+  // Base fluctuation (-3% to +3%)
+  const baseFluctuation = Math.random() * 0.06 - 0.03;
+
+  // Apply momentum to fluctuation
+  const totalFluctuation = baseFluctuation + trendMomentum * 0.02;
+
+  // Calculate new active users
+  let newActiveUsers = Math.round(baseActive * (1 + totalFluctuation));
+
+  // Time-based modifier (simulating daily/weekly patterns)
+  const hour = new Date().getHours();
+  let timeModifier = 1;
+
+  // Peak hours: 9-11 AM and 7-9 PM (assuming UTC)
+  if ((hour >= 9 && hour <= 11) || (hour >= 19 && hour <= 21)) {
+    timeModifier = 1.2;
+  }
+  // Low hours: 2-5 AM
+  else if (hour >= 2 && hour <= 5) {
+    timeModifier = 0.7;
+  }
+
+  newActiveUsers = Math.round(newActiveUsers * timeModifier);
+
+  // Ensure reasonable bounds (40% below to 80% above base)
+  const minActiveUsers = Math.floor(baseActive * 0.6);
+  const maxActiveUsers = Math.ceil(baseActive * 1.8);
+  newActiveUsers = Math.max(
+    minActiveUsers,
+    Math.min(maxActiveUsers, newActiveUsers)
+  );
+
+  // Total registered users grows more slowly and steadily
+  // During down trends, growth slows but never stops
+  const growthRate =
+    0.0001 + Math.random() * 0.0003 * (trendMomentum > 0 ? 1.2 : 0.8);
+  const growth = Math.ceil(baseTotal * growthRate);
+  const newTotalRegistered = baseTotal + growth;
+
+  return {
+    activeUsers: newActiveUsers,
+    totalRegistered: newTotalRegistered,
+    timestamp: new Date().toISOString(),
+  };
+}
+
+export async function getCurrentStats() {
   try {
-    const data = await databases.createDocument(
-      DATABASE_ID,
-      ACTIVE_USERS_ID,
-      ID.unique(),
-      {
-        total: count,
-        registeredTotal,
-        lastUpdated: new Date().toISOString(),
-      }
+    // Get the most recent stats
+    const data = await databases.listDocuments(
+      DATABASE_ID as string,
+      STATS_COLLECTION_ID as string,
+      [Query.orderDesc("timestamp"), Query.limit(1)]
     );
-    return data;
-  } catch (error) {
-    console.error("Failed to update active users:", error);
-    return null;
+
+    const now = new Date();
+    const currentMinute = now.getMinutes();
+
+    // Only update if we're at a 4-minute interval (0, 4, 8, 12, etc.)
+    const shouldUpdate = currentMinute % 4 === 0 && now.getSeconds() < 10;
+
+    if (data.documents.length === 0) {
+      // Initialize first stats document
+      const initialStats = {
+        activeUsers: 6000,
+        totalRegistered: 40000,
+        timestamp: now.toISOString(),
+      };
+
+      await databases.createDocument(
+        DATABASE_ID as string,
+        STATS_COLLECTION_ID as string,
+        ID.unique(),
+        initialStats
+      );
+
+      return { success: true, data: initialStats };
+    }
+
+    const lastUpdate = new Date(data.documents[0].timestamp);
+    const timeDiff = now.getTime() - lastUpdate.getTime();
+
+    // Only generate new stats if it's time for an update
+    if (shouldUpdate && timeDiff >= 230000) {
+      // 3.8 minutes (buffer for network delays)
+      const newStats = generateNewStats(
+        data.documents[0].activeUsers,
+        data.documents[0].totalRegistered
+      );
+
+      await databases.createDocument(
+        DATABASE_ID as string,
+        STATS_COLLECTION_ID as string,
+        ID.unique(),
+        newStats
+      );
+
+      // Clean up old documents (keep last 100)
+      const oldDocs = await databases.listDocuments(
+        DATABASE_ID as string,
+        STATS_COLLECTION_ID as string,
+        [Query.orderDesc("timestamp"), Query.limit(100)]
+      );
+
+      if (oldDocs.documents.length >= 100) {
+        const docsToDelete = oldDocs.documents.slice(100);
+        for (const doc of docsToDelete) {
+          await databases.deleteDocument(
+            DATABASE_ID as string,
+            STATS_COLLECTION_ID as string,
+            doc.$id
+          );
+        }
+      }
+
+      return { success: true, data: newStats };
+    }
+
+    // Return existing stats if it's not time to update
+    return { success: true, data: data.documents[0] };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error(`Failed to update stats: ${error.message}`);
+      return { success: false, msg: error.message };
+    }
+    console.error("Failed to update stats: Unknown error");
+    return { success: false, msg: "Unknown error occurred" };
   }
 }

@@ -11,4 +11,5 @@ const client = new Client()
   .setProject(NEXT_PUBLIC_APPWRITE_PROJECT as string)
   .setKey(APPWRITE_API_KEY as string);
 
-export const databases = new Databases(client);
+const databases = new Databases(client);
+export { client, databases };
