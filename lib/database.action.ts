@@ -342,7 +342,6 @@ interface StatsResponse {
   msg?: string;
 }
 
-// Define the shape of the document as it comes from Appwrite
 interface StatsDocument extends Models.Document {
   activeUsers: number;
   totalRegistered: number;
@@ -357,49 +356,55 @@ function generateNewStats(previousStats: UserStats): UserStats {
   const lastRegUpdate = new Date(previousStats.lastRegistrationUpdate);
   const timeSinceLastReg = now.getTime() - lastRegUpdate.getTime();
 
-  // Random interval between 8 and 15 minutes (in milliseconds)
-  const updateInterval =
+  // Registration updates (8-15 minutes)
+  const regUpdateInterval =
     (Math.floor(Math.random() * (15 - 8 + 1)) + 8) * 60 * 1000;
-  const shouldUpdateRegistrations = timeSinceLastReg >= updateInterval;
+  const shouldUpdateRegistrations = timeSinceLastReg >= regUpdateInterval;
 
   let newTotalRegistered = previousStats.totalRegistered;
   let newLastRegUpdate = previousStats.lastRegistrationUpdate;
 
+  // Update total registered users every 8-15 minutes
   if (shouldUpdateRegistrations) {
-    // Random increment between 7 and 11 users
     const increment = Math.floor(Math.random() * (11 - 7 + 1)) + 7;
     newTotalRegistered += increment;
     newLastRegUpdate = now.toISOString();
   }
 
-  // Calculate active users with random increase or decrease
+  // Calculate active users change
   const hour = now.getHours();
   let timeModifier = 1;
 
-  // Peak hours modifier
+  // Time-based modifiers
   if ((hour >= 9 && hour <= 11) || (hour >= 19 && hour <= 21)) {
-    timeModifier = 1.3;
+    timeModifier = 1.2; // Peak hours: 20% increase
   } else if (hour >= 2 && hour <= 5) {
-    timeModifier = 0.5;
+    timeModifier = 0.8; // Low hours: 20% decrease
   }
 
-  // Random change for active users (-500 to +500)
-  const activeIncrement = Math.floor(Math.random() * (1000 + 1)) - 500;
-  let newActiveUsers = previousStats.activeUsers + activeIncrement;
+  // Generate base change (200-500)
+  const baseChange = Math.floor(Math.random() * (500 - 200 + 1)) + 200;
+  // Apply time modifier
+  const modifiedChange = Math.round(baseChange * timeModifier);
+  // 50% chance to decrease
+  const finalChange = Math.random() < 0.5 ? -modifiedChange : modifiedChange;
 
-  // Apply time modifier to the change
-  newActiveUsers = Math.round(newActiveUsers * timeModifier);
+  // Calculate new active users
+  let newActiveUsers = previousStats.activeUsers + finalChange;
 
-  // Ensure active users stay within bounds:
-  // 1. Not less than minimum (80k)
-  // 2. Not more than total registered users
-  newActiveUsers = Math.min(
+  // Ensure active users stay within bounds
+  const maxActiveUsers = Math.min(
     newTotalRegistered,
+    Math.round(newTotalRegistered * 0.9) // Max 90% of total registered
+  );
+
+  newActiveUsers = Math.min(
+    maxActiveUsers,
     Math.max(newActiveUsers, MIN_ACTIVE_USERS)
   );
 
   return {
-    activeUsers: newActiveUsers,
+    activeUsers: Math.round(newActiveUsers),
     totalRegistered: newTotalRegistered,
     timestamp: now.toISOString(),
     lastRegistrationUpdate: newLastRegUpdate,
@@ -419,13 +424,13 @@ export async function getCurrentStats(): Promise<StatsResponse> {
     );
 
     const now = new Date();
-    // Random update interval between 5 and 20 seconds
-    const updateInterval = Math.floor(Math.random() * (20 - 5 + 1)) + 5;
+    // Update every 10-15 seconds
+    const updateInterval = Math.floor(Math.random() * (15 - 10 + 1)) + 10;
     const shouldUpdate = now.getSeconds() % updateInterval === 0;
 
     if (data.documents.length === 0) {
       const initialStats: UserStats = {
-        activeUsers: 80000,
+        activeUsers: MIN_ACTIVE_USERS,
         totalRegistered: 200000,
         timestamp: now.toISOString(),
         lastRegistrationUpdate: now.toISOString(),
@@ -445,8 +450,8 @@ export async function getCurrentStats(): Promise<StatsResponse> {
     const lastUpdate = new Date(latestDoc.timestamp);
     const timeDiff = now.getTime() - lastUpdate.getTime();
 
-    if (shouldUpdate && timeDiff >= 5000) {
-      // Minimum 5 seconds between updates
+    if (shouldUpdate && timeDiff >= 10000) {
+      // Minimum 10 seconds between updates
       const currentStats: UserStats = {
         activeUsers: latestDoc.activeUsers,
         totalRegistered: latestDoc.totalRegistered,
@@ -463,7 +468,7 @@ export async function getCurrentStats(): Promise<StatsResponse> {
         newStats
       );
 
-      // Keep only recent documents
+      // Cleanup old documents
       const oldDocs = await databases.listDocuments<StatsDocument>(
         DATABASE_ID,
         STATS_COLLECTION_ID,
