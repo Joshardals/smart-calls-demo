@@ -1,5 +1,5 @@
 "use server";
-import { databases, client } from "@/lib/appwrite.config";
+import { databases } from "@/lib/appwrite.config";
 import { ID, Query } from "node-appwrite";
 import { sendMail } from "./mail.action";
 
