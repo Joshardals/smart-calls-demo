@@ -8,6 +8,13 @@ interface UserStats {
   activeUsers: number;
   totalRegistered: number;
   timestamp: string;
+  lastRegistrationUpdate: string;
+}
+
+interface StatsResponse {
+  success: boolean;
+  data?: UserStats;
+  msg?: string;
 }
 
 export default function Status() {
@@ -16,6 +23,7 @@ export default function Status() {
     activeUsers: 0,
     totalRegistered: 0,
     timestamp: new Date().toISOString(),
+    lastRegistrationUpdate: new Date().toISOString(),
   });
 
   useEffect(() => {
@@ -25,16 +33,9 @@ export default function Status() {
       if (!isMounted) return;
 
       try {
-        const result = await getCurrentStats();
+        const result: StatsResponse = await getCurrentStats();
         if (result.success && result.data && isMounted) {
-          // Type guard to ensure data has the correct shape
-          const statsData: UserStats = {
-            activeUsers: result.data.activeUsers,
-            totalRegistered: result.data.totalRegistered,
-            timestamp: result.data.timestamp,
-          };
-
-          setStats(statsData);
+          setStats(result.data);
           setIsLoading(false);
         }
       } catch (error) {
@@ -45,28 +46,24 @@ export default function Status() {
       }
     };
 
-    // Initial update
+    const now = new Date();
+    const msToNextMinute =
+      60000 - (now.getSeconds() * 1000 + now.getMilliseconds());
+
     updateStats();
 
-    // Calculate time until next 4-minute interval
-    const now = new Date();
-    const secondsUntilNextInterval =
-      240 - ((now.getMinutes() % 4) * 60 + now.getSeconds());
-    const millisecondsUntilNextInterval = secondsUntilNextInterval * 1000;
-
-    // Initial setTimeout to sync with 4-minute intervals
     const initialTimeout = setTimeout(() => {
       updateStats();
-      // Start the regular interval after initial sync
-      const interval = setInterval(updateStats, 240000);
+      const interval = setInterval(updateStats, 15000);
       return () => clearInterval(interval);
-    }, millisecondsUntilNextInterval);
+    }, msToNextMinute);
 
     return () => {
       isMounted = false;
       clearTimeout(initialTimeout);
     };
   }, []);
+
   return (
     <div className="px-8 py-2">
       <div className="flex items-center justify-between">

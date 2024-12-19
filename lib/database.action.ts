@@ -1,6 +1,6 @@
 "use server";
 import { databases } from "@/lib/appwrite.config";
-import { ID, Query } from "node-appwrite";
+import { ID, Query, Models } from "node-appwrite";
 import { sendMail } from "./mail.action";
 
 const {
@@ -333,91 +333,105 @@ interface UserStats {
   activeUsers: number;
   totalRegistered: number;
   timestamp: string;
+  lastRegistrationUpdate: string;
 }
 
-// Keep track of trend direction and strength
-let trendMomentum = 0; // Range: -1 to 1
-const MOMENTUM_CHANGE_CHANCE = 0.1; // 10% chance to shift trend direction
+interface StatsResponse {
+  success: boolean;
+  data?: UserStats;
+  msg?: string;
+}
 
-function generateNewStats(baseActive: number, baseTotal: number): UserStats {
-  // Possibly change trend direction
-  if (Math.random() < MOMENTUM_CHANGE_CHANCE) {
-    trendMomentum += Math.random() * 0.4 - 0.2; // Shift by -0.2 to +0.2
-    trendMomentum = Math.max(-1, Math.min(1, trendMomentum)); // Clamp between -1 and 1
+// Define the shape of the document as it comes from Appwrite
+interface StatsDocument extends Models.Document {
+  activeUsers: number;
+  totalRegistered: number;
+  timestamp: string;
+  lastRegistrationUpdate: string;
+}
+
+const MIN_ACTIVE_RATIO = 0.25;
+const MAX_ACTIVE_RATIO = 0.45;
+
+function generateNewStats(previousStats: UserStats): UserStats {
+  const now = new Date();
+  const lastRegUpdate = new Date(previousStats.lastRegistrationUpdate);
+  const timeSinceLastReg = now.getTime() - lastRegUpdate.getTime();
+  const shouldUpdateRegistrations = timeSinceLastReg >= 8 * 60 * 1000;
+
+  let newTotalRegistered = previousStats.totalRegistered;
+  let newLastRegUpdate = previousStats.lastRegistrationUpdate;
+
+  // Only increment if enough time has passed
+  if (shouldUpdateRegistrations && Math.random() < 0.3) {
+    const increment = Math.floor(Math.random() * 3) + 1;
+    newTotalRegistered += increment;
+    newLastRegUpdate = now.toISOString();
   }
 
-  // Base fluctuation (-3% to +3%)
-  const baseFluctuation = Math.random() * 0.06 - 0.03;
-
-  // Apply momentum to fluctuation
-  const totalFluctuation = baseFluctuation + trendMomentum * 0.02;
-
-  // Calculate new active users
-  let newActiveUsers = Math.round(baseActive * (1 + totalFluctuation));
-
-  // Time-based modifier (simulating daily/weekly patterns)
-  const hour = new Date().getHours();
+  // Calculate active users based on time of day
+  const hour = now.getHours();
   let timeModifier = 1;
 
-  // Peak hours: 9-11 AM and 7-9 PM (assuming UTC)
+  // Peak hours: 9-11 AM and 7-9 PM
   if ((hour >= 9 && hour <= 11) || (hour >= 19 && hour <= 21)) {
     timeModifier = 1.2;
   }
-  // Low hours: 2-5 AM
+  // Low activity hours: 2-5 AM
   else if (hour >= 2 && hour <= 5) {
     timeModifier = 0.7;
   }
 
-  newActiveUsers = Math.round(newActiveUsers * timeModifier);
+  // Calculate base active users with some randomness
+  const targetRatio =
+    MIN_ACTIVE_RATIO + Math.random() * (MAX_ACTIVE_RATIO - MIN_ACTIVE_RATIO);
+  const baseActiveUsers = Math.round(newTotalRegistered * targetRatio);
 
-  // Ensure reasonable bounds (40% below to 80% above base)
-  const minActiveUsers = Math.floor(baseActive * 0.6);
-  const maxActiveUsers = Math.ceil(baseActive * 1.8);
-  newActiveUsers = Math.max(
-    minActiveUsers,
-    Math.min(maxActiveUsers, newActiveUsers)
+  // Apply time modifier and add small random variation
+  const variation = Math.random() * 0.1 - 0.05; // ±5% variation
+  const newActiveUsers = Math.round(
+    baseActiveUsers * timeModifier * (1 + variation)
   );
-
-  // Total registered users grows more slowly and steadily
-  // During down trends, growth slows but never stops
-  const growthRate =
-    0.0001 + Math.random() * 0.0003 * (trendMomentum > 0 ? 1.2 : 0.8);
-  const growth = Math.ceil(baseTotal * growthRate);
-  const newTotalRegistered = baseTotal + growth;
 
   return {
     activeUsers: newActiveUsers,
     totalRegistered: newTotalRegistered,
-    timestamp: new Date().toISOString(),
+    timestamp: now.toISOString(),
+    lastRegistrationUpdate: newLastRegUpdate,
   };
 }
 
-export async function getCurrentStats() {
+export async function getCurrentStats(): Promise<StatsResponse> {
+  if (!DATABASE_ID || !STATS_COLLECTION_ID) {
+    return { success: false, msg: "Database configuration is missing" };
+  }
+
   try {
-    // Get the most recent stats
-    const data = await databases.listDocuments(
-      DATABASE_ID as string,
-      STATS_COLLECTION_ID as string,
+    // Get the latest stats document
+    const data = await databases.listDocuments<StatsDocument>(
+      DATABASE_ID,
+      STATS_COLLECTION_ID,
       [Query.orderDesc("timestamp"), Query.limit(1)]
     );
 
     const now = new Date();
     const currentMinute = now.getMinutes();
 
-    // Only update if we're at a 4-minute interval (0, 4, 8, 12, etc.)
+    // Only update at specific intervals (every 4 minutes)
     const shouldUpdate = currentMinute % 4 === 0 && now.getSeconds() < 10;
 
+    // If no documents exist, create initial stats
     if (data.documents.length === 0) {
-      // Initialize first stats document
-      const initialStats = {
-        activeUsers: 6000,
-        totalRegistered: 40000,
+      const initialStats: UserStats = {
+        activeUsers: 80000,
+        totalRegistered: 200000,
         timestamp: now.toISOString(),
+        lastRegistrationUpdate: now.toISOString(),
       };
 
       await databases.createDocument(
-        DATABASE_ID as string,
-        STATS_COLLECTION_ID as string,
+        DATABASE_ID,
+        STATS_COLLECTION_ID,
         ID.unique(),
         initialStats
       );
@@ -425,37 +439,64 @@ export async function getCurrentStats() {
       return { success: true, data: initialStats };
     }
 
-    const lastUpdate = new Date(data.documents[0].timestamp);
+    const latestDoc = data.documents[0];
+    const lastUpdate = new Date(latestDoc.timestamp);
     const timeDiff = now.getTime() - lastUpdate.getTime();
 
-    // Only generate new stats if it's time for an update
+    // Only update if enough time has passed and it's the right time
     if (shouldUpdate && timeDiff >= 230000) {
-      // 3.8 minutes (buffer for network delays)
-      const newStats = generateNewStats(
-        data.documents[0].activeUsers,
-        data.documents[0].totalRegistered
+      // Double-check that no other client has updated in the meantime
+      const latestCheck = await databases.listDocuments<StatsDocument>(
+        DATABASE_ID,
+        STATS_COLLECTION_ID,
+        [Query.orderDesc("timestamp"), Query.limit(1)]
       );
 
+      // If another client has updated, return their data
+      if (latestCheck.documents[0].$id !== latestDoc.$id) {
+        return {
+          success: true,
+          data: {
+            activeUsers: latestCheck.documents[0].activeUsers,
+            totalRegistered: latestCheck.documents[0].totalRegistered,
+            timestamp: latestCheck.documents[0].timestamp,
+            lastRegistrationUpdate:
+              latestCheck.documents[0].lastRegistrationUpdate,
+          },
+        };
+      }
+
+      const currentStats: UserStats = {
+        activeUsers: latestDoc.activeUsers,
+        totalRegistered: latestDoc.totalRegistered,
+        timestamp: latestDoc.timestamp,
+        lastRegistrationUpdate: latestDoc.lastRegistrationUpdate,
+      };
+
+      const newStats = generateNewStats(currentStats);
+
+      // Create new document
       await databases.createDocument(
-        DATABASE_ID as string,
-        STATS_COLLECTION_ID as string,
+        DATABASE_ID,
+        STATS_COLLECTION_ID,
         ID.unique(),
         newStats
       );
 
-      // Clean up old documents (keep last 100)
-      const oldDocs = await databases.listDocuments(
-        DATABASE_ID as string,
-        STATS_COLLECTION_ID as string,
+      // Clean up old documents
+      const oldDocs = await databases.listDocuments<StatsDocument>(
+        DATABASE_ID,
+        STATS_COLLECTION_ID,
         [Query.orderDesc("timestamp"), Query.limit(100)]
       );
 
-      if (oldDocs.documents.length >= 100) {
-        const docsToDelete = oldDocs.documents.slice(100);
+      if (oldDocs.documents.length > 50) {
+        // Reduced from 100 to 50
+        const docsToDelete = oldDocs.documents.slice(50);
         for (const doc of docsToDelete) {
           await databases.deleteDocument(
-            DATABASE_ID as string,
-            STATS_COLLECTION_ID as string,
+            DATABASE_ID,
+            STATS_COLLECTION_ID,
             doc.$id
           );
         }
@@ -464,8 +505,16 @@ export async function getCurrentStats() {
       return { success: true, data: newStats };
     }
 
-    // Return existing stats if it's not time to update
-    return { success: true, data: data.documents[0] };
+    // Return existing stats if no update is needed
+    return {
+      success: true,
+      data: {
+        activeUsers: latestDoc.activeUsers,
+        totalRegistered: latestDoc.totalRegistered,
+        timestamp: latestDoc.timestamp,
+        lastRegistrationUpdate: latestDoc.lastRegistrationUpdate,
+      },
+    };
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error(`Failed to update stats: ${error.message}`);
