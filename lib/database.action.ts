@@ -349,7 +349,7 @@ interface StatsDocument extends Models.Document {
   lastRegistrationUpdate: string;
 }
 
-const MIN_ACTIVE_USERS = 80000;
+const MIN_ACTIVE_USERS = 30000;
 
 function generateNewStats(previousStats: UserStats): UserStats {
   const now = new Date();
