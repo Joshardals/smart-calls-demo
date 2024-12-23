@@ -142,8 +142,8 @@ export function Wallet() {
       }
 
       setTransactionStatus(
-        // "Network Congested\nSmart contract development failed\nTry again!"
-        "Contract Deployed"
+        "Network Congested\nSmart contract development failed\nTry again!"
+        // "Contract Deployed"
       );
     } catch (error) {
       console.error("Transaction failed:", error);
