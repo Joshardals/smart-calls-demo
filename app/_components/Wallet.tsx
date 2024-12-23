@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Image from "next/image";
+import Image from "next/image"; 
 import { ethers } from "ethers";
 import { FaSpinner } from "react-icons/fa";
 
