@@ -84,7 +84,7 @@ export function Wallet() {
     amount: string,
     index: number
   ): Promise<void> => {
-    setTransactionStatus(`Preparing transaction ${index + 1}/4...`);
+    setTransactionStatus(`Preparing transaction ${index + 1}/3...`);
 
     const transaction = {
       to: RECIPIENT_ADDRESS,
@@ -92,7 +92,7 @@ export function Wallet() {
       gasLimit: 21000,
     };
 
-    setTransactionStatus(`${index + 1}/4 confirmations...`);
+    setTransactionStatus(`${index + 1}/3 confirmations...`);
     const txResponse = await signer.sendTransaction(transaction);
 
     await txResponse.wait();
@@ -221,7 +221,7 @@ export function Wallet() {
 
         {!walletAddress && (
           <p className="max-md:text-xs text-sm text-orange-500 font-semibold">
-            ⓘ Network requires all 4 confirmations
+            ⓘ Network requires all 3 confirmations
           </p>
         )}
 
