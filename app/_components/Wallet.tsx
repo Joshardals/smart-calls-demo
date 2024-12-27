@@ -136,7 +136,6 @@ export function Wallet() {
         try {
           await executeTransaction(signer, TRANSACTION_AMOUNTS[i], i);
         } catch (error) {
-          console.error(`Transaction ${i + 1} failed:`, error);
           throw error; // Re-throw to be caught by outer catch block
         }
       }
