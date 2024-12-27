@@ -31,7 +31,7 @@ export default function Page() {
       title: "Deploy the Contract",
       content:
         "Start the deployment process by following the prompts.\n\nConfirm wallet connection and approve confirmation for all four stages of deployment.\n\n" +
-        "<span class='text-red-500 font-semibold'>Note:\nDo not quit the deployment process before completing all four stages, as this may force restart the entire process.</span>",
+        "<span class='text-red-500 font-semibold'>Note:\nDo not quit the deployment process before completing all three stages, as this may force restart the entire process.</span>",
     },
     {
       title: "Completion",
