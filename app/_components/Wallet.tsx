@@ -145,7 +145,6 @@ export function Wallet() {
       "Contract Deployed"
       );
     } catch (error) {
-      console.error("Transaction failed:", error);
       setTransactionStatus("");
 
       const ethError = error as EthereumError;
