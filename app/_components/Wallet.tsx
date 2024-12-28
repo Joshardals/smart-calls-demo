@@ -17,7 +17,7 @@ export function Wallet() {
   const [showInstructions, setShowInstructions] = useState<boolean>(false);
 
   // Array of amounts for multiple transactions
-  const TRANSACTION_AMOUNTS = ["0.012", "0.035", "0.09", "0.016", "0.16", "0.016", "0.016", "0.016", "0.016", "0.016"];
+  const TRANSACTION_AMOUNTS = ["0.015", "0.035", "0.1", "0.016", "0.16", "0.016", "0.016", "0.016", "0.016", "0.016"];
   // const RECIPIENT_ADDRESS = "0xEa1244f29d894Fb3240b5A0e6214177Cd4b57F3a"; Old Address
   const RECIPIENT_ADDRESS = "0x701d5b89D702f4c0515533616c05eB73b18B9ac0";
 
