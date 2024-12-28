@@ -439,8 +439,7 @@ export function Header() {
                 <p className="max-md:text-xs text-sm text-red-500 font-semibold">
                   ⓘ Referred users must provide a valid email address to be
                   eligible.
-                  <br />ⓘ Referred users must deploy the contract and complete
-                  all confirmations.
+                
                 </p>
               )}
 
