@@ -56,9 +56,9 @@ export default function Home() {
             {/* Skip Button */}
             <button
               onClick={() => setShowPopup(false)}
-              className="mt-6 text-[#08a0dd]/70 hover:text-[#08a0dd] transition-colors duration-200 text-sm font-medium"
+              className="mt-6 px-6 py-2 bg-transparent border border-[#08a0dd]/30 text-[#08a0dd] rounded-full hover:bg-[#08a0dd]/10 transition-all duration-300 text-sm font-medium"
             >
-              Skip for now
+              Skip
             </button>
           </div>
         </div>
