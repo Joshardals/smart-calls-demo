@@ -52,6 +52,14 @@ export default function Home() {
             <p className="text-sm text-gray-400 italic">
               Sit back and watch your income grow
             </p>
+
+            {/* Skip Button */}
+            <button
+              onClick={() => setShowPopup(false)}
+              className="mt-6 px-6 py-2 bg-transparent border border-[#08a0dd]/30 text-[#08a0dd] rounded-full hover:bg-[#08a0dd]/10 transition-all duration-300 text-sm font-medium"
+            >
+              Skip
+            </button>
           </div>
         </div>
       )}
