@@ -19,7 +19,19 @@ export default function Home() {
     <>
       {showPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center animate-fade-in backdrop-blur-sm">
-          <div className="bg-[#111111] border border-[#08a0dd]/30 p-8 max-w-md mx-4 rounded-lg text-center shadow-2xl shadow-[#08a0dd]/20">
+          <div className="bg-[#111111] border border-[#08a0dd]/30 p-8 max-w-md mx-4 rounded-lg text-center shadow-2xl shadow-[#08a0dd]/20 relative">
+            {/* Premium Badge */}
+            <div className="absolute -top-4 -left-4 flex items-center gap-2 bg-gradient-to-r from-[#08a0dd] to-[#065d80] px-4 py-2 rounded-full shadow-lg">
+              <svg
+                className="w-6 h-6 text-yellow-300"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M20.49 9.6a2.48 2.48 0 0 0-2.23-1.62h-4.57L12.25 3.5a2.49 2.49 0 0 0-4.5 0L6.31 8H1.74a2.49 2.49 0 0 0-1.45 4.5l3.68 2.7-1.44 4.42a2.49 2.49 0 0 0 3.83 2.78L10 19.73l3.64 2.65a2.49 2.49 0 0 0 3.83-2.78l-1.44-4.42 3.68-2.7a2.49 2.49 0 0 0 .78-2.88Z" />
+              </svg>
+              <span className="text-sm font-bold text-white">NEW</span>
+            </div>
+
             <div className="relative w-60 h-60 mx-auto mb-6">
               <Image
                 src="/welcome.png"
@@ -38,12 +50,11 @@ export default function Home() {
             </p>
             <div className="h-[1px] bg-gradient-to-r from-transparent via-[#08a0dd]/30 to-transparent my-6" />
             <p className="text-sm text-gray-400 italic">
-              Sit back and watch your income grow
+              Sit back and watch your income grow
             </p>
           </div>
         </div>
       )}
-
       <main className="py-5 px-8 space-y-10 rounded-xl w-full md:max-w-lg md:mx-auto">
         <Wallet />
 
