@@ -430,7 +430,7 @@ export function Header() {
           </div>
 
           {/* Main Text */}
-          <span className="mx-4 text-white font-medium">
+          <span className="mx-4 text-white font-medium text-sm">
             Refer and earn up to $2000 in usdt
           </span>
 
