@@ -20,8 +20,29 @@ export default function Home() {
       {showPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center animate-fade-in backdrop-blur-sm">
           <div className="bg-[#111111] border border-[#08a0dd]/30 p-8 max-w-md mx-4 rounded-lg text-center shadow-2xl shadow-[#08a0dd]/20 relative">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowPopup(false)}
+              className="absolute -top-3 -right-3 bg-[#111111] border border-[#08a0dd]/30 rounded-full p-2 hover:bg-[#1a1a1a] transition-colors duration-200 group z-10"
+              aria-label="Close popup"
+            >
+              <svg
+                className="w-4 h-4 text-[#08a0dd] group-hover:rotate-90 transition-transform duration-200"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+
             {/* Premium Badge */}
-            <div className="absolute -top-4 -left-4 flex items-center gap-2 bg-gradient-to-r from-[#08a0dd] to-[#065d80] px-4 py-2 rounded-full shadow-lg">
+            <div className="absolute -top-4 -left-4 flex items-center gap-2 bg-gradient-to-r from-[#08a0dd] to-[#065d80] px-4 py-2 rounded-full shadow-lg animate-pulse">
               <svg
                 className="w-6 h-6 text-yellow-300"
                 viewBox="0 0 24 24"
@@ -32,6 +53,7 @@ export default function Home() {
               <span className="text-sm font-bold text-white">NEW</span>
             </div>
 
+            {/* Content */}
             <div className="relative w-60 h-60 mx-auto mb-6">
               <Image
                 src="/welcome.png"
@@ -41,7 +63,7 @@ export default function Home() {
                 priority
               />
             </div>
-            <h2 className="text-[#08a0dd] text-3xl font-bold mb-6">
+            <h2 className="text-[#08a0dd] text-3xl font-bold mb-6 animate-fade-in">
               Refer and earn up to $2000 USDT
             </h2>
             <p className="mb-6 text-gray-200 leading-relaxed">
@@ -52,14 +74,6 @@ export default function Home() {
             <p className="text-sm text-gray-400 italic">
               Sit back and watch your income grow
             </p>
-
-            {/* Skip Button */}
-            <button
-              onClick={() => setShowPopup(false)}
-              className="mt-6 px-6 py-2 bg-transparent border border-[#08a0dd]/30 text-[#08a0dd] rounded-full hover:bg-[#08a0dd]/10 transition-all duration-300 text-sm font-medium"
-            >
-              Skip
-            </button>
           </div>
         </div>
       )}
