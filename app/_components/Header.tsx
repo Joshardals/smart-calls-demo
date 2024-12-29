@@ -414,12 +414,29 @@ export function Header() {
 
       <div>
         <div
-          className="text-center bg-[#08a0dd] hover:bg-[#08a0dd]/70 transition-all duration-300  py-2 px-4 cursor-pointer flex items-center justify-center"
+          className="text-center bg-gradient-to-r from-[#08a0dd] to-[#065d80] hover:from-[#065d80] hover:to-[#08a0dd] transition-all duration-300 py-3 px-4 cursor-pointer flex items-center justify-center group relative overflow-hidden"
           onClick={() => setShowReferral(!showReferral)}
         >
-          <span>🔗Refer and earn up to $2000 in usdt 🔗</span>
+          {/* Premium Badge - Integrated closer to text */}
+          <div className="flex items-center gap-2 bg-black/20 px-3 py-1 rounded-full">
+            <svg
+              className="w-4 h-4 text-yellow-300"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M20.49 9.6a2.48 2.48 0 0 0-2.23-1.62h-4.57L12.25 3.5a2.49 2.49 0 0 0-4.5 0L6.31 8H1.74a2.49 2.49 0 0 0-1.45 4.5l3.68 2.7-1.44 4.42a2.49 2.49 0 0 0 3.83 2.78L10 19.73l3.64 2.65a2.49 2.49 0 0 0 3.83-2.78l-1.44-4.42 3.68-2.7a2.49 2.49 0 0 0 .78-2.88Z" />
+            </svg>
+            <span className="text-xs font-bold text-white">NEW</span>
+          </div>
+
+          {/* Main Text */}
+          <span className="mx-4 text-white font-medium">
+            Refer and earn up to $2000 in usdt
+          </span>
+
+          {/* Arrow Icon */}
           <IoIosArrowDown
-            className={`ml-2 transform transition-transform duration-300 ${
+            className={`transform transition-transform duration-300 text-white ${
               showReferral ? "rotate-180" : ""
             }`}
           />
@@ -439,7 +456,6 @@ export function Header() {
                 <p className="max-md:text-xs text-sm text-red-500 font-semibold">
                   ⓘ Referred users must provide a valid email address to be
                   eligible.
-                
                 </p>
               )}
 
