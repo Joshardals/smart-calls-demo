@@ -41,10 +41,10 @@ export default function Home() {
                 priority
               />
             </div>
-            <h2 className="text-[#08a0dd] text-3xl font-bold mb-6">
+            <h2 className="text-[#08a0dd] text-lg font-bold mb-6">
               Refer and earn up to $2000 USDT
             </h2>
-            <p className="mb-6 text-gray-200 leading-relaxed">
+            <p className="mb-6 text-gray-200 leading-relaxed text-sm">
               Earn rewards equivalent to deploying the contract by referring new
               members to join the Web3 community.
             </p>
