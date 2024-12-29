@@ -34,7 +34,7 @@ export default function Home() {
             </h2>
             <p className="mb-6 text-gray-200 leading-relaxed">
               Earn rewards equivalent to deploying the contract by referring new
-              members to join our Web3 community.
+              members to join the Web3 community.
             </p>
             <div className="h-[1px] bg-gradient-to-r from-transparent via-[#08a0dd]/30 to-transparent my-6" />
             <p className="text-sm text-gray-400 italic">
