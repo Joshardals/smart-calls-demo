@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import Status from "./_components/Status";
 
 export default function Home() {
-  const [showPopup, setShowPopup] = useState(false); // so I changed true to false, don't forget to change it back.
+  const [showPopup, setShowPopup] = useState(true); // so I changed true to false, don't forget to change it back.
 
   useEffect(() => {
     const timer = setTimeout(() => {

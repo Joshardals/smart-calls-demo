@@ -603,7 +603,7 @@ export function Header() {
           </div>
 
           {showModal && (
-            <div className="absolute right-0 mt-2 bg-white text-black border rounded shadow-lg w-32">
+            <div className="absolute right-0 mt-2 bg-white text-black border rounded shadow-lg w-32 z-50">
               <ul>
                 {navLinks.map((link) => (
                   <li key={link.href} className="w-full hover:bg-gray-200">
