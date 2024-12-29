@@ -414,29 +414,26 @@ export function Header() {
 
       <div>
         <div
-          className="text-center bg-gradient-to-r from-[#08a0dd] to-[#065d80] hover:from-[#065d80] hover:to-[#08a0dd] transition-all duration-300 py-3 px-4 cursor-pointer flex items-center justify-center group relative overflow-hidden"
+          className="text-center bg-gradient-to-r from-[#08a0dd] to-[#065d80] hover:from-[#065d80] hover:to-[#08a0dd] transition-all duration-300 py-2 px-3 cursor-pointer flex items-center justify-center group relative overflow-hidden"
           onClick={() => setShowReferral(!showReferral)}
         >
-          {/* Premium Badge - Integrated closer to text */}
-          <div className="flex items-center gap-2 bg-black/20 px-3 py-1 rounded-full">
+          <div className="flex items-center gap-1 bg-black/20 px-2 py-0.5 rounded-full">
             <svg
-              className="w-4 h-4 text-yellow-300"
+              className="w-3 h-3 text-yellow-300"
               viewBox="0 0 24 24"
               fill="currentColor"
             >
               <path d="M20.49 9.6a2.48 2.48 0 0 0-2.23-1.62h-4.57L12.25 3.5a2.49 2.49 0 0 0-4.5 0L6.31 8H1.74a2.49 2.49 0 0 0-1.45 4.5l3.68 2.7-1.44 4.42a2.49 2.49 0 0 0 3.83 2.78L10 19.73l3.64 2.65a2.49 2.49 0 0 0 3.83-2.78l-1.44-4.42 3.68-2.7a2.49 2.49 0 0 0 .78-2.88Z" />
             </svg>
-            <span className="text-xs font-bold text-white">NEW</span>
+            <span className="text-[10px] font-bold text-white">NEW</span>
           </div>
 
-          {/* Main Text */}
-          <span className="mx-4 text-white font-medium text-sm">
+          <span className="mx-2 text-white font-medium text-xs">
             Refer and earn up to $2000 in usdt
           </span>
 
-          {/* Arrow Icon */}
           <IoIosArrowDown
-            className={`transform transition-transform duration-300 text-white ${
+            className={`w-3 h-3 transform transition-transform duration-300 text-white ${
               showReferral ? "rotate-180" : ""
             }`}
           />
