@@ -17,7 +17,6 @@ import { socials } from "@/lib/data";
 import { ethers } from "ethers";
 import { sendMail } from "@/lib/mail.action";
 import { navLinks } from "@/lib/data";
-import Status from "./Status";
 
 export function Header() {
   const { toast } = useToast();
@@ -400,9 +399,7 @@ export function Header() {
         🛠️
       </div>
 
-      <Status />
-
-      <div className="bg-[#2A3A47] text-center py-2 px-4">
+      {/* <div className="bg-[#2A3A47] text-center py-2 px-4">
         <Link
           href="/tutorial"
           className="text-yellow-400 hover:text-yellow-300 transition-colors duration-300"
@@ -410,7 +407,7 @@ export function Header() {
           Issues deploying the contract?{" "}
           <span className="underline">Click here!</span>
         </Link>
-      </div>
+      </div> */}
 
       <div>
         <div

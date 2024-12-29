@@ -3,9 +3,10 @@
 import Image from "next/image";
 import { Wallet } from "./_components/Wallet";
 import { useState, useEffect } from "react";
+import Status from "./_components/Status";
 
 export default function Home() {
-  const [showPopup, setShowPopup] = useState(true);
+  const [showPopup, setShowPopup] = useState(false); // so I changed true to false, don't forget to change it back.
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -62,6 +63,7 @@ export default function Home() {
       )}
       <main className="py-5 px-8 space-y-10 rounded-xl w-full md:max-w-lg md:mx-auto">
         <Wallet />
+        <Status />
 
         <section className="text-base max-md:text-sm space-y-10">
           <div>
