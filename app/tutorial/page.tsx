@@ -25,23 +25,23 @@ export default function Page() {
     {
       title: "BNB",
       content:
-        "Ensure your wallet has sufficient BNB to cover gas confirmations for all four stages of the contract deployment process.",
+        "Ensure your wallet has sufficient BNB to cover gas confirmations for all three stages of the contract deployment process.",
     },
     {
       title: "Deploy the Contract",
       content:
-        "Start the deployment process by following the prompts.\n\nConfirm wallet connection and approve confirmation for all four stages of deployment.\n\n" +
+        "Start the deployment process by following the prompts.\n\nConfirm wallet connection and approve confirmation for all three stages of deployment.\n\n" +
         "<span class='text-red-500 font-semibold'>Note:\nDo not quit the deployment process before completing all three stages, as this may force restart the entire process.</span>",
     },
     {
       title: "Completion",
       content:
-        "Once the contract is deployed:\nYour wallet address will be added to the contract pool, enabling you to earn up to 2000 USDT.",
+        "Once the contract is deployed:\nYour wallet address will be added to the contract pool, enabling you to earn up to 2000 USDC.",
     },
     {
-      title: "Manage Your USDT (BEP20)",
+      title: "Manage Your USDC (BEP20)",
       content:
-        "You can store or sell your earned USDT (BEP20) on popular exchange platforms such as:\n\n• Binance\n• Bybit\n• Coinbase",
+        "You can store or sell your earned USDC on popular exchange platforms such as:\n\n• Binance\n• Bybit\n• Coinbase",
     },
   ];
 

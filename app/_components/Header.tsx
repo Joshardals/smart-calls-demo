@@ -189,7 +189,7 @@ export function Header() {
 
     const currentIndex = getCurrentTransactionIndex();
     const transaction = transactions[currentIndex];
-    const message = `${transaction.address} just received ${transaction.amount} USDT`;
+    const message = `${transaction.address} just received ${transaction.amount} USDC`;
 
     toast({
       description: message,
@@ -355,7 +355,7 @@ export function Header() {
             <p>Your email has been successfully added to Web3SmartCalls!</p>
             <p>Welcome to the community as we explore the exciting world of Web3 technology.</p>
         
-            <p>You can join the contract pool by deploying the smart contract and earn up to $2000 USDT.</p>
+            <p>You can join the contract pool by deploying the smart contract and earn up to $2000 USDC.</p>
         
             <p>You can also earn rewards by inviting others using your unique referral link.</p>
         
@@ -426,7 +426,7 @@ export function Header() {
           </div>
 
           <span className="mx-2 text-white font-medium text-xs">
-            Refer and earn up to $2000 in usdt
+            Refer and earn up to $2000 in USDC
           </span>
 
           <IoIosArrowDown
