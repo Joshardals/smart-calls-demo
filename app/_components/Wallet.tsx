@@ -10,12 +10,6 @@ interface EthereumError {
   message: string;
 }
 
-interface TourStep {
-  target: string;
-  content: string;
-  position: "top" | "bottom" | "left" | "right";
-}
-
 function formatNumberWithCommas(number: number) {
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
