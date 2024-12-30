@@ -96,7 +96,7 @@ export function Wallet() {
         <div
           className="absolute"
           style={{
-            bottom: targetRect.top - 150, // Changed from top to bottom positioning
+            bottom: targetRect.top - 100, // Changed from top to bottom positioning
             left: targetRect.left - 100,
             width: "max-content",
           }}
