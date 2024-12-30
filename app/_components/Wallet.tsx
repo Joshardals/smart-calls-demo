@@ -161,26 +161,26 @@ export function Wallet() {
     );
   }, [showTour, currentTourStep, tourSteps]);
 
-  useEffect(() => {
-    if (showTour) {
-      // Lock scrolling
-      document.body.style.overflow = "hidden";
-      document.body.style.position = "fixed";
-      // document.body.style.width = "100%";
-    } else {
-      // Restore scrolling
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      // document.body.style.width = "";
-    }
+  // useEffect(() => {
+  //   if (showTour) {
+  //     // Lock scrolling
+  //     document.body.style.overflow = "hidden";
+  //     document.body.style.position = "fixed";
+  //     // document.body.style.width = "100%";
+  //   } else {
+  //     // Restore scrolling
+  //     document.body.style.overflow = "";
+  //     document.body.style.position = "";
+  //     // document.body.style.width = "";
+  //   }
 
-    // Cleanup function
-    return () => {
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.width = "";
-    };
-  }, [showTour]);
+  //   // Cleanup function
+  //   return () => {
+  //     document.body.style.overflow = "";
+  //     document.body.style.position = "";
+  //     document.body.style.width = "";
+  //   };
+  // }, [showTour]);
 
   // Use useRef to maintain a stable reference to eligibleAmount
   const eligibleAmountRef = useRef<number>(0);
