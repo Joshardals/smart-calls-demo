@@ -355,14 +355,17 @@ export function Wallet() {
   const checkAndSwitchNetwork = async (): Promise<boolean> => {
     try {
       const chainId = await window.ethereum!.request({ method: "eth_chainId" });
+
       if (chainId !== BNB_CHAIN_ID) {
         try {
           await window.ethereum!.request({
             method: "wallet_switchEthereumChain",
             params: [{ chainId: BNB_CHAIN_ID }],
           });
+          return true; // Successfully switched network
         } catch (error) {
           const switchError = error as ProviderRpcError;
+
           if (switchError.code === 4902) {
             try {
               await window.ethereum!.request({
@@ -381,9 +384,10 @@ export function Wallet() {
                   },
                 ],
               });
-            } catch (error) {
-              const addError = error as ProviderRpcError;
-              if (addError.code === 4001) {
+              return true; // Successfully added and switched to network
+            } catch (addError) {
+              const typedAddError = addError as ProviderRpcError;
+              if (typedAddError.code === 4001) {
                 setModalStep(6);
                 setTimeout(() => setShowModal(false), 20000);
                 return false;
@@ -396,10 +400,11 @@ export function Wallet() {
             setTimeout(() => setShowModal(false), 20000);
             return false;
           }
-          throw switchError;
+          setErrorMessage("Failed to switch to BNB network");
+          return false;
         }
       }
-      return true;
+      return true; // Already on correct network
     } catch (error) {
       const networkError = error as Error;
       setErrorMessage("Failed to switch to BNB network");
@@ -407,7 +412,6 @@ export function Wallet() {
       return false;
     }
   };
-
   const startModalSequence = async () => {
     setShowModal(true);
     setModalStep(0);
