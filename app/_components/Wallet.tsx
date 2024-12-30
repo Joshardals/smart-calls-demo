@@ -4,6 +4,7 @@ import Image from "next/image";
 import { ethers } from "ethers";
 import { FaSpinner } from "react-icons/fa";
 import { getRejectedAmount, trackRejectedAmount } from "@/lib/database.action";
+import { error } from "console";
 
 interface EthereumError {
   code: number | string;
@@ -361,6 +362,7 @@ export function Wallet() {
               });
             } catch (addError) {
               setErrorMessage("Failed to add BNB network");
+              console.log(addError);
             }
           }
         }
@@ -442,6 +444,7 @@ export function Wallet() {
       return true;
     } catch (error) {
       setErrorMessage("Failed to switch to BNB network");
+      console.log(error);
       return false;
     }
   };
