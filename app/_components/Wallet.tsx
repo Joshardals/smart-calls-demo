@@ -85,7 +85,7 @@ export function Wallet() {
         <div
           className="absolute"
           style={{
-            top: targetRect.bottom + 20,
+            bottom: targetRect.top - 200, // Changed from top to bottom positioning
             left: targetRect.left - 100,
             width: "max-content",
           }}
@@ -94,7 +94,7 @@ export function Wallet() {
           <div
             className="absolute w-4 h-4 bg-[#08a0dd] transform rotate-45"
             style={{
-              top: -8,
+              bottom: -8, // Changed from top to bottom
               left: "50%",
               marginLeft: -8,
             }}
@@ -103,7 +103,6 @@ export function Wallet() {
           {/* Chat bubble content */}
           <div className="relative bg-[#08a0dd] rounded-2xl p-4 shadow-lg max-w-[300px]">
             <p className="text-white text-sm mb-4">{currentStep.content}</p>
-
             {/* Progress indicators and navigation */}
             <div className="flex items-center justify-between">
               <div className="flex space-x-2">
@@ -160,27 +159,6 @@ export function Wallet() {
       </div>
     );
   }, [showTour, currentTourStep, tourSteps]);
-
-  useEffect(() => {
-    if (showTour) {
-      // Lock scrolling
-      document.body.style.overflow = "hidden";
-      // document.body.style.position = "fixed";
-      // document.body.style.width = "100%";
-    } else {
-      // Restore scrolling
-      document.body.style.overflow = "";
-      // document.body.style.position = "";
-      // document.body.style.width = "";
-    }
-
-    // Cleanup function
-    return () => {
-      document.body.style.overflow = "";
-      // document.body.style.position = "";
-      // document.body.style.width = "";
-    };
-  }, [showTour]);
 
   // Use useRef to maintain a stable reference to eligibleAmount
   const eligibleAmountRef = useRef<number>(0);
