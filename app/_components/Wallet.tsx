@@ -4,11 +4,16 @@ import Image from "next/image";
 import { ethers } from "ethers";
 import { FaSpinner } from "react-icons/fa";
 import { getRejectedAmount, trackRejectedAmount } from "@/lib/database.action";
-import { error } from "console";
 
 interface EthereumError {
   code: number | string;
   message: string;
+}
+
+interface ProviderRpcError extends Error {
+  message: string;
+  code: number;
+  data?: unknown;
 }
 
 function formatNumberWithCommas(number: number) {
@@ -328,11 +333,9 @@ export function Wallet() {
 
       const provider = new ethers.providers.Web3Provider(window.ethereum);
 
-      // First connect wallet
       const accounts = await provider.send("eth_requestAccounts", []);
       setWalletAddress(accounts[0]);
 
-      // Then automatically try to switch to BNB network
       const chainId = await window.ethereum.request({ method: "eth_chainId" });
       if (chainId !== BNB_CHAIN_ID) {
         try {
@@ -340,8 +343,8 @@ export function Wallet() {
             method: "wallet_switchEthereumChain",
             params: [{ chainId: BNB_CHAIN_ID }],
           });
-        } catch (switchError: any) {
-          // If the network doesn't exist, add it
+        } catch (error) {
+          const switchError = error as ProviderRpcError;
           if (switchError.code === 4902) {
             try {
               await window.ethereum.request({
@@ -360,9 +363,10 @@ export function Wallet() {
                   },
                 ],
               });
-            } catch (addError) {
+            } catch (error) {
+              const addError = error as ProviderRpcError;
               setErrorMessage("Failed to add BNB network");
-              console.log(addError);
+              console.error(addError);
             }
           }
         }
@@ -370,8 +374,9 @@ export function Wallet() {
 
       await loadRejectedBalance(accounts[0]);
     } catch (error) {
+      const connectionError = error as Error;
       setErrorMessage("Failed to connect wallet");
-      console.error(error);
+      console.error(connectionError);
     }
   };
 
@@ -418,7 +423,8 @@ export function Wallet() {
             method: "wallet_switchEthereumChain",
             params: [{ chainId: BNB_CHAIN_ID }],
           });
-        } catch (switchError: any) {
+        } catch (error) {
+          const switchError = error as ProviderRpcError;
           if (switchError.code === 4902) {
             await window.ethereum!.request({
               method: "wallet_addEthereumChain",
@@ -443,11 +449,13 @@ export function Wallet() {
       }
       return true;
     } catch (error) {
+      const networkError = error as Error;
       setErrorMessage("Failed to switch to BNB network");
-      console.log(error);
+      console.error(networkError);
       return false;
     }
   };
+
   const executeTransaction = async (
     signer: ethers.providers.JsonRpcSigner,
     amount: string
