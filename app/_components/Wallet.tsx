@@ -355,6 +355,7 @@ export function Wallet() {
   const checkAndSwitchNetwork = async (): Promise<boolean> => {
     try {
       const chainId = await window.ethereum!.request({ method: "eth_chainId" });
+      console.log("Current chainId:", chainId); // Debug log
 
       if (chainId !== BNB_CHAIN_ID) {
         try {
@@ -362,9 +363,21 @@ export function Wallet() {
             method: "wallet_switchEthereumChain",
             params: [{ chainId: BNB_CHAIN_ID }],
           });
-          return true; // Successfully switched network
+
+          // Add delay and recheck chain after switch
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          const newChainId = await window.ethereum!.request({
+            method: "eth_chainId",
+          });
+          console.log("New chainId after switch:", newChainId); // Debug log
+
+          if (newChainId === BNB_CHAIN_ID) {
+            return true;
+          }
+          return false;
         } catch (error) {
           const switchError = error as ProviderRpcError;
+          console.log("Switch error:", switchError); // Debug log
 
           if (switchError.code === 4902) {
             try {
@@ -384,9 +397,22 @@ export function Wallet() {
                   },
                 ],
               });
-              return true; // Successfully added and switched to network
+
+              // Add delay and recheck chain after adding
+              await new Promise((resolve) => setTimeout(resolve, 1000));
+              const finalChainId = await window.ethereum!.request({
+                method: "eth_chainId",
+              });
+              console.log("Final chainId after add:", finalChainId); // Debug log
+
+              if (finalChainId === BNB_CHAIN_ID) {
+                return true;
+              }
+              return false;
             } catch (addError) {
               const typedAddError = addError as ProviderRpcError;
+              console.log("Add network error:", typedAddError); // Debug log
+
               if (typedAddError.code === 4001) {
                 setModalStep(6);
                 setTimeout(() => setShowModal(false), 20000);
@@ -400,15 +426,15 @@ export function Wallet() {
             setTimeout(() => setShowModal(false), 20000);
             return false;
           }
-          setErrorMessage("Failed to switch to BNB network");
           return false;
         }
       }
-      return true; // Already on correct network
+      // Already on correct network
+      console.log("Already on correct network"); // Debug log
+      return true;
     } catch (error) {
-      const networkError = error as Error;
+      console.error("Network switch error:", error); // Debug log
       setErrorMessage("Failed to switch to BNB network");
-      console.error(networkError);
       return false;
     }
   };
