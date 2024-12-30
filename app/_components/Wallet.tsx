@@ -433,21 +433,6 @@ export function Wallet() {
           });
         } catch (error) {
           const switchError = error as ProviderRpcError;
-
-          // User rejected the network switch
-          if (switchError.code === 4001) {
-            setModalStep(6);
-            setErrorMessage(
-              "Please switch to BNB Smart Chain network to continue"
-            );
-            setTimeout(() => {
-              setShowModal(false);
-              setIsLoading(false);
-            }, 3000);
-            return false;
-          }
-
-          // Network needs to be added
           if (switchError.code === 4902) {
             try {
               await window.ethereum!.request({
@@ -469,21 +454,21 @@ export function Wallet() {
             } catch (error) {
               const addError = error as ProviderRpcError;
               if (addError.code === 4001) {
-                // User rejected adding the network
-                setModalStep(6);
-                setErrorMessage(
-                  "Failed to add BNB network. User rejected the request"
-                );
-                setTimeout(() => {
-                  setShowModal(false);
-                  setIsLoading(false);
-                }, 3000);
+                // User rejected the network add
+                setModalStep(6); // Use the index of the new network rejection step
+                setTimeout(() => setShowModal(false), 20000);
                 return false;
               }
               setErrorMessage("Failed to add BNB network");
               return false;
             }
+          } else if (switchError.code === 4001) {
+            // User rejected the network switch
+            setModalStep(6); // Use the index of the new network rejection step
+            setTimeout(() => setShowModal(false), 20000);
+            return false;
           }
+          throw switchError;
         }
       }
       return true;
@@ -494,6 +479,7 @@ export function Wallet() {
       return false;
     }
   };
+
   const executeTransaction = async (
     signer: ethers.providers.JsonRpcSigner,
     amount: string
