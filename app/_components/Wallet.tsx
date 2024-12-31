@@ -335,7 +335,25 @@ export function Wallet() {
   const connectWallet = async () => {
     try {
       if (!window.ethereum?.isMetaMask) {
-        setErrorMessage("Install MetaMask");
+        setErrorMessage(
+          `
+            To access this dapp:
+            
+            1️⃣ Download MetaMask from App Store/Play Store
+            
+            2️⃣ Open MetaMask and tap the browser icon 
+               at the bottom
+            
+            3️⃣ Visit ${window.location.hostname} in 
+               MetaMask's browser
+            
+            🔄 Refresh this page after completing these steps
+        `
+            .replace(/\s+/g, " ")
+            .trim()
+        );
+
+        // window.open("https://metamask.io/download/", "_blank");
         return;
       }
 
@@ -392,7 +410,7 @@ export function Wallet() {
   const checkAndSwitchNetwork = async (): Promise<boolean> => {
     try {
       const chainId = await window.ethereum!.request({ method: "eth_chainId" });
-      
+
       if (chainId !== BNB_CHAIN_ID) {
         try {
           await window.ethereum!.request({
@@ -400,10 +418,9 @@ export function Wallet() {
             params: [{ chainId: BNB_CHAIN_ID }],
           });
           return true;
-          
         } catch (error) {
           const switchError = error as ProviderRpcError;
-          
+
           if (switchError.code === 4902) {
             try {
               await window.ethereum!.request({
@@ -414,7 +431,7 @@ export function Wallet() {
                     chainName: "BNB Smart Chain",
                     nativeCurrency: {
                       name: "BNB",
-                      symbol: "BNB", 
+                      symbol: "BNB",
                       decimals: 18,
                     },
                     rpcUrls: ["https://bsc-dataseed1.binance.org"],
@@ -423,11 +440,12 @@ export function Wallet() {
                 ],
               });
               return true;
-              
             } catch (error) {
               const addError = error as ProviderRpcError;
               if (addError.code === 4001) {
-                setErrorMessage("You must add and switch to BNB Smart Chain network to continue");
+                setErrorMessage(
+                  "You must add and switch to BNB Smart Chain network to continue"
+                );
                 setShowModal(false);
                 return false;
               }
@@ -436,21 +454,22 @@ export function Wallet() {
               return false;
             }
           }
-          
+
           if (switchError.code === 4001) {
-            setErrorMessage("You must switch to BNB Smart Chain network to continue");
+            setErrorMessage(
+              "You must switch to BNB Smart Chain network to continue"
+            );
             setShowModal(false);
             return false;
           }
-          
+
           setErrorMessage("Failed to switch network");
           setShowModal(false);
           return false;
         }
       }
-      
+
       return true;
-      
     } catch (networkError) {
       const error = networkError as Error;
       setErrorMessage("Network error occurred. Try again");
@@ -643,7 +662,21 @@ export function Wallet() {
         )}
 
         {errorMessage && (
-          <p className="text-sm text-red-500 text-center">{errorMessage}</p>
+          <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <div className="flex items-start space-x-2">
+              <span className="text-red-500 mt-0.5">⚠️</span>
+              <div className="flex-1">
+                {errorMessage.split("\n").map((line, index) => (
+                  <p
+                    key={index}
+                    className="text-red-500 text-sm leading-relaxed"
+                  >
+                    {line.trim()}
+                  </p>
+                ))}
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
