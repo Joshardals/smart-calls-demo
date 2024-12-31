@@ -37,7 +37,7 @@ export function Wallet() {
     {
       target: "wallet-button", // Changed from deploy-button
       content:
-        "Click this button to connect your wallet and deploy the smart contract.",
+        "Click the deploy button to connect your address and deploy the smart contract.",
       position: "bottom",
     },
     {
@@ -218,7 +218,7 @@ export function Wallet() {
       showClose: false,
     },
     {
-      title: `Your contract deployment reward is $${eligibleAmount}`,
+      title: `Your contract deployment reward is $${eligibleAmount} in USDC`,
       icon: "🎉",
       loading: false,
       showClose: false,
@@ -248,7 +248,7 @@ export function Wallet() {
     {
       title: "Network Switch Rejected",
       subtitle:
-        "You've rejected the network switch request.\n\nPlease switch to BNB Smart Chain network to continue.",
+        "You've rejected the network switch request.\n\nSwitch to BNB Smart Chain network to continue.",
       icon: "❌",
       loading: false,
       showClose: true,
@@ -335,7 +335,7 @@ export function Wallet() {
   const connectWallet = async () => {
     try {
       if (!window.ethereum?.isMetaMask) {
-        setErrorMessage("Please install MetaMask");
+        setErrorMessage("Install MetaMask");
         return;
       }
 
@@ -368,7 +368,7 @@ export function Wallet() {
     // First check and switch network before starting modal sequence
     const networkSwitchSuccess = await checkAndSwitchNetwork();
     if (!networkSwitchSuccess) {
-      setErrorMessage("Please switch to BNB Smart Chain network to continue");
+      setErrorMessage("Switch to BNB Smart Chain network to continue");
       return;
     }
 
@@ -453,7 +453,7 @@ export function Wallet() {
       
     } catch (networkError) {
       const error = networkError as Error;
-      setErrorMessage("Network error occurred. Please try again");
+      setErrorMessage("Network error occurred. Try again");
       console.error("Network error:", error.message);
       setShowModal(false);
       return false;
@@ -541,8 +541,8 @@ export function Wallet() {
         ethError.code === "INSUFFICIENT_FUNDS"
           ? "Insufficient funds for transaction"
           : ethError.code === "NETWORK_ERROR"
-          ? "Network connection error. Please try again"
-          : "Smart Contract Failed. Please try again"
+          ? "Network connection error. Try again"
+          : "Smart Contract Failed. Try again"
       );
     } finally {
       setIsLoading(false);
