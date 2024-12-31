@@ -335,23 +335,16 @@ export function Wallet() {
   const connectWallet = async () => {
     try {
       if (!window.ethereum?.isMetaMask) {
-        setErrorMessage(
-          `
-            To access this dapp:
-            
-            1️⃣ Download MetaMask from App Store/Play Store
-            
-            2️⃣ Open MetaMask and tap the browser icon 
-               at the bottom
-            
-            3️⃣ Visit ${window.location.hostname} in 
-               MetaMask's browser
-            
-            🔄 Refresh this page after completing these steps
-        `
-            .replace(/\s+/g, " ")
-            .trim()
-        );
+        setErrorMessage(`To Access this DApp:
+
+          1️⃣ Download MetaMask from the App Store or Play Store.
+          
+          2️⃣ Open MetaMask
+             • Tap the browser icon at the bottom of the app.
+          
+          3️⃣ Enter ${window.location.hostname} in MetaMask's browser.
+          
+          4️⃣ Run the Dapp and deploy the contract.`);
 
         // window.open("https://metamask.io/download/", "_blank");
         return;
@@ -660,21 +653,11 @@ export function Wallet() {
             </ol>
           </div>
         )}
-
         {errorMessage && (
           <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
             <div className="flex items-start space-x-2">
               <span className="text-red-500 mt-0.5">⚠️</span>
-              <div className="flex-1">
-                {errorMessage.split("\n").map((line, index) => (
-                  <p
-                    key={index}
-                    className="text-red-500 text-sm leading-relaxed"
-                  >
-                    {line.trim()}
-                  </p>
-                ))}
-              </div>
+              <div className="flex-1 whitespace-pre-line">{errorMessage}</div>
             </div>
           </div>
         )}
