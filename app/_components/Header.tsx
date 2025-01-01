@@ -546,7 +546,7 @@ export function Header() {
                       <br />
                       I&apos;ve recently been into the Web3 community, and let me
                       tell you—it&apos;s the real deal. I&apos;ve already made a few
-                      hundred dollars just by being part of it. This isn't just
+                      hundred dollars just by being part of it. This isn&apos;t just
                       hype; it&apos;s an opportunity to be early and grow your
                       portfolio without being left behind.
                       <br />
