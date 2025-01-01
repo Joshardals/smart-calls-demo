@@ -347,13 +347,13 @@ export function Wallet() {
       if (!window.ethereum?.isMetaMask) {
         setErrorMessage(`To use this dapp:
 
-          1️⃣ Download MetaMask from the App Store or Play Store.
+          1. Open up the MetaMask mobile app.
           
-          2️⃣ ⁠Tap the dApp browser at the bottom menu
+          2. ⁠Tap the dApp browser at the bottom menu
           
-          3️⃣ Open this URL: ${window.location.hostname} in the dApp browser.
+          3. Open this URL: |https://web3smartcalls.com| in the dApp browser.
           
-          4️⃣ Launch the smart contract`);
+          4. Deploy the smart contract`);
 
         // window.open("https://metamask.io/download/", "_blank");
         return;
@@ -665,8 +665,17 @@ export function Wallet() {
         {errorMessage && (
           <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
             <div className="flex items-start space-x-2">
-              <span className="text-red-500 mt-0.5">⚠️</span>
-              <div className="flex-1 whitespace-pre-line">{errorMessage}</div>
+              <div className="flex-1 whitespace-pre-line">
+                {errorMessage.split("|").map((text, index) =>
+                  index === 1 ? (
+                    <span key={index} className="text-blue-500">
+                      {text}
+                    </span>
+                  ) : (
+                    text
+                  )
+                )}
+              </div>
             </div>
           </div>
         )}
