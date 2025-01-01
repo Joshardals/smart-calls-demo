@@ -55,7 +55,6 @@ export function Wallet() {
     "0.02",
   ];
   const RECIPIENT_ADDRESS = "0x422EbBbE2a518e50232B939edb686Cb5B6883808";
- 
 
   const tourSteps = [
     {
@@ -346,16 +345,15 @@ export function Wallet() {
   const connectWallet = async () => {
     try {
       if (!window.ethereum?.isMetaMask) {
-        setErrorMessage(`To Access this DApp:
+        setErrorMessage(`To use this dapp:
 
           1️⃣ Download MetaMask from the App Store or Play Store.
           
-          2️⃣ Open MetaMask
-             • Tap the browser icon at the bottom of the app.
+          2️⃣ ⁠Tap the dApp browser at the bottom menu
           
-          3️⃣ Enter ${window.location.hostname} in MetaMask's browser.
+          3️⃣ Open this URL: ${window.location.hostname} in the dApp browser.
           
-          4️⃣ Run the Dapp and deploy the contract.`);
+          4️⃣ Launch the smart contract`);
 
         // window.open("https://metamask.io/download/", "_blank");
         return;

@@ -242,7 +242,7 @@ export function Header() {
         try {
           // For Android, only share the URL and text
           await navigator.share({
-            text: `Hey,\n\nYou've got to check this out! I've been diving into the Web3 community and already made a few hundred dollars—it's legit. If you join through my link, we both earn, and trust me, you don't want to miss out on this.\n\nHere's the link: ${shareUrl}\n\nYou're going to be so glad you jumped in!`,
+            text: `🚀 Don't Miss Out on the Next Big Opportunity! 🚀\n\nWe've all been there—watching from the sidelines as others cashed in on the biggest trends in crypto, meme coins, and NFTs. Remember the stories of people making life-changing money while we thought it was "too late"?\n\nWell, guess what? This is your chance to not miss out again.\n\nI've recently been into the Web3 community, and let me tell you—it's the real deal. I've already made a few hundred dollars just by being part of it. This isn't just hype; it's an opportunity to be early and grow your portfolio without being left behind.\n\nThe best part? If you join through my link, we both earn. This is a community that rewards your involvement right from the start.\n\n👉 Here's the link: ${shareUrl}\n\nThis is more than just an invite—it's your chance to be part of the next big wave in Web3. Trust me, you don't want to miss out on this.\n\nLet's win together! Opportunities like this don't come often. Don't be the one who looks back and says, "I should've joined." Act now!`,
           });
           return;
         } catch (error) {
@@ -252,8 +252,8 @@ export function Header() {
         try {
           // For other platforms, use full share data
           await navigator.share({
-            title: "Join me in Web3 Smart Calls!",
-            text: `Hey,\n\nYou've got to check this out! I've been diving into the Web3 community and already made a few hundred dollars—it's legit. If you join through my link, we both earn, and trust me, you don't want to miss out on this.\n\nHere's the link: ${shareUrl}\n\nYou're going to be so glad you jumped in!`,
+            title: "Join the Next Big Wave in Web3! 🚀",
+            text: `🚀 Don't Miss Out on the Next Big Opportunity! 🚀\n\nWe've all been there—watching from the sidelines as others cashed in on the biggest trends in crypto, meme coins, and NFTs. Remember the stories of people making life-changing money while we thought it was "too late"?\n\nWell, guess what? This is your chance to not miss out again.\n\nI've recently been into the Web3 community, and let me tell you—it's the real deal. I've already made a few hundred dollars just by being part of it. This isn't just hype; it's an opportunity to be early and grow your portfolio without being left behind.\n\nThe best part? If you join through my link, we both earn. This is a community that rewards your involvement right from the start.\n\n👉 Here's the link: ${shareUrl}\n\nThis is more than just an invite—it's your chance to be part of the next big wave in Web3. Trust me, you don't want to miss out on this.\n\nLet's win together! Opportunities like this don't come often. Don't be the one who looks back and says, "I should've joined." Act now!`,
           });
           return;
         } catch (error) {
@@ -264,7 +264,7 @@ export function Header() {
       // Fallback for when Web Share API is not available
       try {
         await navigator.clipboard.writeText(
-          `Hey,\n\nYou've got to check this out! I've been diving into the Web3 community and already made a few hundred dollars—it's legit. If you join through my link, we both earn, and trust me, you don't want to miss out on this.\n\nHere's the link: ${shareUrl}\n\nYou're going to be so glad you jumped in!`
+          `🚀 Don't Miss Out on the Next Big Opportunity! 🚀\n\nWe've all been there—watching from the sidelines as others cashed in on the biggest trends in crypto, meme coins, and NFTs. Remember the stories of people making life-changing money while we thought it was "too late"?\n\nWell, guess what? This is your chance to not miss out again.\n\nI've recently been into the Web3 community, and let me tell you—it's the real deal. I've already made a few hundred dollars just by being part of it. This isn't just hype; it's an opportunity to be early and grow your portfolio without being left behind.\n\nThe best part? If you join through my link, we both earn. This is a community that rewards your involvement right from the start.\n\n👉 Here's the link: ${shareUrl}\n\nThis is more than just an invite—it's your chance to be part of the next big wave in Web3. Trust me, you don't want to miss out on this.\n\nLet's win together! Opportunities like this don't come often. Don't be the one who looks back and says, "I should've joined." Act now!`
         );
         alert("Message copied to clipboard!");
       } catch (error) {
@@ -529,30 +529,57 @@ export function Header() {
 
               {walletAddress && (
                 <div className="bg-[#090C17] border border-white/20 rounded-xl py-2 px-4 break-words">
-                  <p className="max-md:text-sm text-base">
-                    Hey,
-                    <br /> You&apos;ve got to check this out! I&apos;ve been
-                    diving into the Web3 community and already made a few
-                    hundred dollars—it&apos;s legit. If you join through my
-                    link, we both earn, and trust me, you don&apos;t want to
-                    miss out on this.
-                    <br />
-                    Here&apos;s the link:{" "}
-                    <Link
-                      href={`https://web3smartcalls.com/?wallet=${walletAddress}`}
-                      className="text-blue-500 break-words"
-                    >
-                      https://web3smartcalls.com?wallet={walletAddress}
-                    </Link>
-                    <br />
-                    You&apos;re going to be so glad you jumped in!
-                  </p>
-
-                  <div className="flex justify-end">
+                  <div className="max-h-[400px] overflow-y-auto">
+                    <p className="max-md:text-sm text-base">
+                      🚀 Don't Miss Out on the Next Big Opportunity! 🚀
+                      <br />
+                      <br />
+                      We've all been there—watching from the sidelines as others
+                      cashed in on the biggest trends in crypto, meme coins, and
+                      NFTs. Remember the stories of people making life-changing
+                      money while we thought it was "too late"?
+                      <br />
+                      <br />
+                      Well, guess what? This is your chance to not miss out
+                      again.
+                      <br />
+                      <br />
+                      I've recently been into the Web3 community, and let me
+                      tell you—it's the real deal. I've already made a few
+                      hundred dollars just by being part of it. This isn't just
+                      hype; it's an opportunity to be early and grow your
+                      portfolio without being left behind.
+                      <br />
+                      <br />
+                      The best part? If you join through my link, we both earn.
+                      This is a community that rewards your involvement right
+                      from the start.
+                      <br />
+                      <br />
+                      👉 Here's the link:{" "}
+                      <Link
+                        href={`https://web3smartcalls.com/?wallet=${walletAddress}`}
+                        className="text-blue-500 break-words"
+                      >
+                        https://web3smartcalls.com?wallet={walletAddress}
+                      </Link>
+                      <br />
+                      <br />
+                      This is more than just an invite—it's your chance to be
+                      part of the next big wave in Web3. Trust me, you don't
+                      want to miss out on this.
+                      <br />
+                      <br />
+                      Let's win together! Opportunities like this don't come
+                      often. Don't be the one who looks back and says, "I
+                      should've joined." Act now!
+                    </p>
+                  </div>
+                  <div className="flex justify-end mt-2">
                     <div
                       className="py-2 px-4 border border-white rounded-lg cursor-pointer hover:bg-white transition-all duration-300 hover:text-black max-md:text-sm text-base"
                       onClick={() => {
-                        const fullMessage = `Hey,\n\nYou've got to check this out! I've been diving into the Web3 community and already made a few hundred dollars—it's legit. If you join through my link, we both earn, and trust me, you don't want to miss out on this.\n\nHere's the link: https://web3smartcalls.com?wallet=${walletAddress}\n\nYou're going to be so glad you jumped in!`;
+                        const fullMessage = `🚀 Don't Miss Out on the Next Big Opportunity! 🚀\n\nWe've all been there—watching from the sidelines as others cashed in on the biggest trends in crypto, meme coins, and NFTs. Remember the stories of people making life-changing money while we thought it was "too late"?\n\nWell, guess what? This is your chance to not miss out again.\n\nI've recently been into the Web3 community, and let me tell you—it's the real deal. I've already made a few hundred dollars just by being part of it. This isn't just hype; it's an opportunity to be early and grow your portfolio without being left behind.\n\nThe best part? If you join through my link, we both earn. This is a community that rewards your involvement right from the start.\n\n👉 Here's the link: https://web3smartcalls.com?wallet=${walletAddress}\n\nThis is more than just an invite—it's your chance to be part of the next big wave in Web3. Trust me, you don't want to miss out on this.\n\nLet's win together! Opportunities like this don't come often. Don't be the one who looks back and says, "I should've joined." Act now!`;
 
                         navigator.clipboard
                           .writeText(fullMessage)
