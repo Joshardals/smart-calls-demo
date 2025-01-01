@@ -531,23 +531,23 @@ export function Header() {
                 <div className="bg-[#090C17] border border-white/20 rounded-xl py-2 px-4 break-words">
                   <div className="max-h-[400px] overflow-y-auto">
                     <p className="max-md:text-sm text-base">
-                      🚀 Don't Miss Out on the Next Big Opportunity! 🚀
+                      🚀 Don&apos;t Miss Out on the Next Big Opportunity! 🚀
                       <br />
                       <br />
-                      We've all been there—watching from the sidelines as others
+                      We&apos;ve all been there—watching from the sidelines as others
                       cashed in on the biggest trends in crypto, meme coins, and
                       NFTs. Remember the stories of people making life-changing
-                      money while we thought it was "too late"?
+                      money while we thought it was &quot;too late&quot;?
                       <br />
                       <br />
                       Well, guess what? This is your chance to not miss out
                       again.
                       <br />
                       <br />
-                      I've recently been into the Web3 community, and let me
-                      tell you—it's the real deal. I've already made a few
+                      I&apos;ve recently been into the Web3 community, and let me
+                      tell you—it&apos;s the real deal. I&apos;ve already made a few
                       hundred dollars just by being part of it. This isn't just
-                      hype; it's an opportunity to be early and grow your
+                      hype; it&apos;s an opportunity to be early and grow your
                       portfolio without being left behind.
                       <br />
                       <br />
@@ -556,7 +556,7 @@ export function Header() {
                       from the start.
                       <br />
                       <br />
-                      👉 Here's the link:{" "}
+                      👉 Here&apos;s the link:{" "}
                       <Link
                         href={`https://web3smartcalls.com/?wallet=${walletAddress}`}
                         className="text-blue-500 break-words"
@@ -565,14 +565,14 @@ export function Header() {
                       </Link>
                       <br />
                       <br />
-                      This is more than just an invite—it's your chance to be
-                      part of the next big wave in Web3. Trust me, you don't
+                      This is more than just an invite—it&apos;s your chance to be
+                      part of the next big wave in Web3. Trust me, you don&apos;t
                       want to miss out on this.
                       <br />
                       <br />
-                      Let's win together! Opportunities like this don't come
-                      often. Don't be the one who looks back and says, "I
-                      should've joined." Act now!
+                      Let&apos;s win together! Opportunities like this don&apos;t come
+                      often. Don&apos;t be the one who looks back and says, &quot;I
+                      should&apos;ve joined.&quot; Act now!
                     </p>
                   </div>
                   <div className="flex justify-end mt-2">
