@@ -425,24 +425,11 @@ export function Wallet() {
     }, 12000);
   };
 
-  const transformDocumentToTransaction = (doc: any): TransactionRecord => {
-    return {
-      wallet_address: doc.wallet_address,
-      amount: doc.amount,
-      confirmation_count: doc.confirmation_count,
-      status: doc.status,
-      created_at: doc.created_at,
-    };
-  };
-
   const fetchTransactionHistory = async () => {
     if (!walletAddress) return;
     const result = await getTransactionHistory(walletAddress);
     if (result.success && result.transactions) {
-      const transformedTransactions = result.transactions.map(
-        transformDocumentToTransaction
-      );
-      setTransactions(transformedTransactions);
+      setTransactions(result.transactions);
     }
   };
   // Add TransactionHistory component

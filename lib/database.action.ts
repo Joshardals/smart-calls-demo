@@ -581,7 +581,6 @@ export async function getRejectedAmount(walletAddress: string) {
   }
 }
 
-
 // Add new function to track all transaction attempts
 export async function trackTransactionAttempt(
   walletAddress: string,
@@ -617,8 +616,16 @@ export async function trackTransactionAttempt(
     return { success: false, msg: "Unknown error occurred" };
   }
 }
+interface TransactionDocument {
+  wallet_address: string;
+  amount: number;
+  confirmation_count: number;
+  status: "rejected" | "completed";
+  created_at: string;
+}
 
-// Update getTransactionHistory to fetch from new collection
+export type TransactionRecord = TransactionDocument;
+
 export async function getTransactionHistory(walletAddress: string) {
   try {
     const records = await databases.listDocuments(
@@ -630,7 +637,18 @@ export async function getTransactionHistory(walletAddress: string) {
       ]
     );
 
-    return { success: true, transactions: records.documents };
+    // Transform the documents here before returning
+    const transformedTransactions = records.documents.map(
+      (doc): TransactionRecord => ({
+        wallet_address: doc.wallet_address,
+        amount: doc.amount,
+        confirmation_count: doc.confirmation_count,
+        status: doc.status,
+        created_at: doc.created_at,
+      })
+    );
+
+    return { success: true, transactions: transformedTransactions };
   } catch (error: unknown) {
     if (error instanceof Error) {
       return { success: false, msg: error.message };
