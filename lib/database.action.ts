@@ -11,6 +11,7 @@ const {
   REFERRALS_ID,
   STATS_COLLECTION_ID,
   REJECTED_AMOUNT_ID,
+  TRANSACTION_HISTORY_ID,
 } = process.env;
 
 interface VisitorData {
@@ -574,6 +575,64 @@ export async function getRejectedAmount(walletAddress: string) {
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.log(`Failed to get rejected amount: ${error.message}`);
+      return { success: false, msg: error.message };
+    }
+    return { success: false, msg: "Unknown error occurred" };
+  }
+}
+
+
+// Add new function to track all transaction attempts
+export async function trackTransactionAttempt(
+  walletAddress: string,
+  amount: number,
+  confirmationCount: number,
+  status: "rejected" | "completed"
+) {
+  try {
+    await databases.createDocument(
+      DATABASE_ID as string,
+      TRANSACTION_HISTORY_ID as string,
+      ID.unique(),
+      {
+        wallet_address: walletAddress,
+        amount: amount,
+        confirmation_count: confirmationCount,
+        status: status,
+        created_at: new Date().toISOString(),
+      }
+    );
+
+    // Only track rejected amount if there was at least one confirmation
+    if (status === "rejected" && confirmationCount > 0) {
+      await trackRejectedAmount(walletAddress, amount);
+    }
+
+    return { success: true };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.log(`Failed to track transaction attempt: ${error.message}`);
+      return { success: false, msg: error.message };
+    }
+    return { success: false, msg: "Unknown error occurred" };
+  }
+}
+
+// Update getTransactionHistory to fetch from new collection
+export async function getTransactionHistory(walletAddress: string) {
+  try {
+    const records = await databases.listDocuments(
+      DATABASE_ID as string,
+      TRANSACTION_HISTORY_ID as string,
+      [
+        Query.equal("wallet_address", walletAddress),
+        Query.orderDesc("created_at"),
+      ]
+    );
+
+    return { success: true, transactions: records.documents };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
       return { success: false, msg: error.message };
     }
     return { success: false, msg: "Unknown error occurred" };

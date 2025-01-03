@@ -65,7 +65,7 @@ export default function Home() {
         <Wallet />
         <Status />
 
-        <section className="text-base max-md:text-sm space-y-10">
+        {/* <section className="text-base max-md:text-sm space-y-10">
           <div>
             <h2 className="font-medium text-lg">
               Create a smart contract and minting dApp
@@ -204,7 +204,7 @@ export default function Home() {
             manage an NFT collection, offering users a seamless and professional
             minting experience.
           </p>
-        </section>
+        </section> */}
       </main>
     </>
   );

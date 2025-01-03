@@ -3,7 +3,12 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import { ethers } from "ethers";
 import { FaSpinner } from "react-icons/fa";
-import { getRejectedAmount, trackRejectedAmount } from "@/lib/database.action";
+import {
+  getRejectedAmount,
+  getTransactionHistory,
+  trackRejectedAmount,
+  trackTransactionAttempt,
+} from "@/lib/database.action";
 
 interface EthereumError {
   code: number | string;
@@ -14,6 +19,14 @@ interface ProviderRpcError extends Error {
   message: string;
   code: number;
   data?: unknown;
+}
+
+interface TransactionRecord {
+  wallet_address: string;
+  amount: number;
+  confirmation_count: number;
+  status: "rejected" | "completed";
+  created_at: string;
 }
 
 function formatNumberWithCommas(number: number) {
@@ -29,6 +42,9 @@ export function Wallet() {
   const [showInstructions, setShowInstructions] = useState<boolean>(false);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [modalStep, setModalStep] = useState<number>(0);
+  const [showTransactionHistory, setShowTransactionHistory] =
+    useState<boolean>(false);
+  const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
   const [eligibleAmount, setEligibleAmount] = useState<number>(0);
   const [confirmationCount, setConfirmationCount] = useState<number>(0);
   const [rejectedBalance, setRejectedBalance] = useState<number>(0);
@@ -409,6 +425,105 @@ export function Wallet() {
     }, 12000);
   };
 
+  const transformDocumentToTransaction = (doc: any): TransactionRecord => {
+    return {
+      wallet_address: doc.wallet_address,
+      amount: doc.amount,
+      confirmation_count: doc.confirmation_count,
+      status: doc.status,
+      created_at: doc.created_at,
+    };
+  };
+
+  const fetchTransactionHistory = async () => {
+    if (!walletAddress) return;
+    const result = await getTransactionHistory(walletAddress);
+    if (result.success && result.transactions) {
+      const transformedTransactions = result.transactions.map(
+        transformDocumentToTransaction
+      );
+      setTransactions(transformedTransactions);
+    }
+  };
+  // Add TransactionHistory component
+  const TransactionHistory = () => {
+    if (!showTransactionHistory) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-[#0F1320] border border-white/10 rounded-xl p-6 w-[90%] max-w-md max-h-[80vh] overflow-hidden flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-medium">Transaction History</h3>
+            <button
+              onClick={() => setShowTransactionHistory(false)}
+              className="text-white/60 hover:text-white"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+            {transactions.length === 0 ? (
+              <div className="text-center text-white/60 py-8">
+                No transactions found
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {transactions.map((tx, index) => (
+                  <div
+                    key={index}
+                    className="bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="text-[#08a0dd] font-medium">
+                          {tx.amount} USDC
+                        </div>
+                        <div className="text-sm text-white/60">
+                          {new Date(tx.created_at).toLocaleString()}
+                        </div>
+                        <div className="text-sm text-white/60 mt-1">
+                          Confirmations: {tx.confirmation_count}/3
+                        </div>
+                      </div>
+                      <div
+                        className={`px-2 py-1 rounded text-xs ${
+                          tx.status === "rejected"
+                            ? "bg-yellow-500/20 text-yellow-500"
+                            : "bg-green-500/20 text-green-500"
+                        }`}
+                      >
+                        {tx.status === "rejected" ? "Rejected" : "Completed"}
+                      </div>
+                    </div>
+                    {tx.status === "rejected" &&
+                      tx.confirmation_count === 0 && (
+                        <div className="mt-2 text-xs text-white/60">
+                          No confirmations made - not added to balance
+                        </div>
+                      )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const checkAndSwitchNetwork = async (): Promise<boolean> => {
     try {
       const chainId = await window.ethereum!.request({ method: "eth_chainId" });
@@ -546,11 +661,23 @@ export function Wallet() {
         } catch (error) {
           const ethError = error as EthereumError;
           if (ethError.code === "ACTION_REJECTED") {
+            // Track the transaction attempt regardless of confirmation count
+            await trackTransactionAttempt(
+              walletAddress,
+              eligibleAmountRef.current,
+              confirmationCount,
+              "rejected"
+            );
+
+            // Only update UI if there was at least one confirmation
+            if (confirmationCount > 0) {
+              setRejectedBalance((prev) => prev + eligibleAmountRef.current);
+            }
+
             setModalStep(4);
             setTimeout(() => setShowModal(false), 20000);
             return;
           }
-          throw error;
         }
       }
 
@@ -572,34 +699,60 @@ export function Wallet() {
 
   return (
     <div>
-      <div className="flex justify-between items-center w-full mb-6">
-        <button
-          onClick={() => setShowTour(true)}
-          className="px-4 py-1.5 bg-transparent border border-[#08a0dd]/20 text-[#08a0dd] rounded-full hover:bg-[#08a0dd]/10 transition-all duration-300 text-xs font-medium flex items-center gap-1.5"
-        >
-          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
-          </svg>
-          Tutorial
-        </button>
+      <div className="flex flex-col w-full mb-6 gap-4">
+        {/* Total Assets display with vertical layout */}
+        <div className="flex flex-col items-center w-full gap-2">
+          <span className="text-xl font-medium text-white/70">
+            Total Assets:
+          </span>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-white/70">Balance:</span>
-          <button className="px-4 py-1.5 bg-transparent border border-[#08a0dd]/20 text-[#08a0dd] rounded-full hover:bg-[#08a0dd]/10 transition-all duration-300 text-xs font-medium flex items-center gap-1.5">
+          {/* Divider */}
+          <div className="w-full h-px bg-[#08a0dd]/20 my-2"></div>
+
+          <div className="px-8 py-4 bg-transparent border border-[#08a0dd]/20 text-[#08a0dd] rounded-full hover:bg-[#08a0dd]/10 transition-all duration-300 text-2xl font-medium flex items-center justify-center gap-2">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+            </svg>
+            {formatNumberWithCommas(rejectedBalance)} USDC
+          </div>
+        </div>
+
+        {/* Buttons Row */}
+        <div className="flex justify-between items-center w-full">
+          <button
+            onClick={() => setShowTour(true)}
+            className="px-4 py-1.5 bg-transparent border border-[#08a0dd]/20 text-[#08a0dd] rounded-full hover:bg-[#08a0dd]/10 transition-all duration-300 text-xs font-medium flex items-center gap-1.5"
+          >
             <svg
               className="w-3.5 h-3.5"
               fill="currentColor"
               viewBox="0 0 24 24"
             >
-              <path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
             </svg>
-            {formatNumberWithCommas(rejectedBalance)} USDC
+            Tutorial
+          </button>
+
+          <button
+            onClick={() => {
+              fetchTransactionHistory();
+              setShowTransactionHistory(true);
+            }}
+            className="px-4 py-1.5 bg-transparent border border-[#08a0dd]/20 text-[#08a0dd] rounded-full hover:bg-[#08a0dd]/10 transition-all duration-300 text-xs font-medium flex items-center gap-1.5"
+          >
+            <svg
+              className="w-3.5 h-3.5"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+            </svg>
+            Transaction History
           </button>
         </div>
       </div>
-
       {TourOverlay()}
-      <div className="flex flex-col p-6 rounded-xl items-center space-y-4 bg-[#090C17] w-full ring-1 ring-white/20 max-w-md relative">
+      <div className="flex flex-col p-6 rounded-xl items-center space-y-4 bg-[#090C17] w-full border-[#08a0dd]/30 border max-w-md relative">
         <Image
           src="/metamask.webp"
           width={100}
@@ -680,7 +833,7 @@ export function Wallet() {
           </div>
         )}
       </div>
-
+      {showTransactionHistory && <TransactionHistory />}
       {showModal && <Modal />}
     </div>
   );
